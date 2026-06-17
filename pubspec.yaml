@@ -1,0 +1,84 @@
+name: atlas
+description: "A new Flutter project."
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  #==================== FIREBASE ====================#
+  firebase_core: ^4.1.1
+  firebase_auth: ^6.5.1
+  firebase_messaging: ^16.0.2
+  cloud_firestore: ^6.4.1
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.2
+  # firebase_analytics: ^12.0.2
+  flutter_local_notifications: ^19.0.0
+  change_app_package_name: ^1.5.0
+  #==================== STATE MANAGEMENT ====================#
+  get: ^4.7.2
+
+  #==================== NETWORK ====================#
+  http:
+
+  #==================== UI & UX ====================#
+  persistent_bottom_nav_bar: ^6.2.1
+  pull_to_refresh: ^2.0.0
+  hugeicons: ^0.0.11
+  cupertino_icons: ^1.0.8
+  lottie: ^3.1.0
+
+  #==================== LOCAL STORAGE ====================#
+  get_storage: ^2.1.1
+
+  #==================== UTILITIES =xR===================#
+  timezone: ^0.10.1
+  kartal: ^4.1.0
+  intl: ^0.20.2
+  device_info_plus: ^10.0.0
+  url_launcher: ^6.2.1
+
+  #==================== MEDIA ====================#
+  image_picker: ^1.1.2
+  cached_network_image: ^3.3.1
+  flutter_svg: ^2.0.10+1
+
+  #==================== DOWNLOAD ====================#
+  dio: ^5.4.0
+  path: ^1.9.0
+  feather_icons: ^1.2.0
+  iconly: ^1.0.1
+  share_plus: ^10.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/fonts/
+    - assets/icons/
+    - assets/images/
+    - assets/lottie/
+
+  fonts:
+    - family: Gilroy
+      fonts:
+        - asset: assets/fonts/Gilroy-Regular.ttf
+        - asset: assets/fonts/Gilroy-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Gilroy-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Gilroy-Bold.ttf
+          weight: 700
