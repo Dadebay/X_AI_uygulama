@@ -15,20 +15,14 @@ class FirestoreService {
   }
 
   /// Firestore `teams` koleksiyonundan takımları çeker.
-  /// Her döküman yapısı:
-  /// { id, name, shortName, logoUrl, followers, league, colors: ['#RRGGBB', ...] }
   Future<List<TeamModel>> getTeams() async {
-    final snap = await _db
-        .collection('teams')
-        .orderBy('order')
-        .get();
+    final snap = await _db.collection('teams').orderBy('order').get();
     return snap.docs.map((doc) {
       final d = doc.data();
       final rawColors = (d['colors'] as List<dynamic>?) ?? [];
-      final colors = rawColors
-          .map((c) => _hexToColor(c.toString()))
-          .whereType<Color>()
-          .toList();
+      final colors = rawColors.map((c) => _hexToColor(c.toString())).whereType<Color>().toList();
+      final rawAccounts = (d['twitterAccounts'] as List<dynamic>?) ?? [];
+      final twitterAccounts = rawAccounts.map((a) => a.toString()).toList();
       return TeamModel(
         id: doc.id,
         name: d['name']?.toString() ?? '',
@@ -37,8 +31,32 @@ class FirestoreService {
         followers: (d['followers'] as num?)?.toInt() ?? 0,
         league: d['league']?.toString() ?? '',
         colors: colors,
+        twitterAccounts: twitterAccounts,
+        searchQuery: d['searchQuery']?.toString() ?? '',
+        order: (d['order'] as num?)?.toInt() ?? 0,
       );
     }).toList();
+  }
+
+  Future<void> addTeam(Map<String, dynamic> data) async {
+    await _db.collection('teams').add(data);
+  }
+
+  Future<void> updateTeam(String id, Map<String, dynamic> data) async {
+    await _db.collection('teams').doc(id).update(data);
+  }
+
+  Future<void> deleteTeam(String id) async {
+    await _db.collection('teams').doc(id).delete();
+  }
+
+  Future<String> getAdminPin() async {
+    try {
+      final snap = await _db.collection('config').doc('settings').get();
+      return snap.data()?['adminPin']?.toString() ?? '2024';
+    } catch (_) {
+      return '2024';
+    }
   }
 
   Color? _hexToColor(String hex) {

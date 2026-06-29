@@ -12,6 +12,7 @@ import 'package:atlas/widgets/common/settings_row.dart';
 import 'package:atlas/widgets/profile/settings_sheets.dart';
 import 'package:atlas/modules/profile/views/about_page.dart';
 import 'package:atlas/modules/notifications/views/notifications_screen.dart';
+import 'package:atlas/modules/admin/views/admin_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -87,6 +88,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SettingsRow(icon: HugeIcons.strokeRoundedInformationCircle, label: 'about_app'.tr, onTap: () => Get.to(() => const AboutPage(), transition: Transition.cupertino)),
             SettingsRow(icon: HugeIcons.strokeRoundedShield01, label: 'privacy_policy'.tr, onTap: () => Get.to(() => const PrivacyPage(), transition: Transition.cupertino)),
             SettingsRow(icon: HugeIcons.strokeRoundedNote01, label: 'terms_of_use'.tr, onTap: () => Get.to(() => const TermsPage(), transition: Transition.cupertino)),
+            const SizedBox(height: 8),
+            SectionHeader('Yönetim'),
+            SettingsRow(
+              icon: HugeIcons.strokeRoundedSettings01,
+              label: 'Admin Paneli',
+              onTap: () => Get.to(() => const AdminScreen(), transition: Transition.cupertino),
+            ),
           ],
         ),
       ),

@@ -17,6 +17,7 @@ class TweetModel {
   final int replies;
   final int retweets;
   final int likes;
+  final int views;
   final String? tweetUrl;
   final bool isVerified;
   final List<String> tags;
@@ -32,6 +33,7 @@ class TweetModel {
     this.replies = 0,
     this.retweets = 0,
     this.likes = 0,
+    this.views = 0,
     this.tweetUrl,
     this.isVerified = false,
     this.tags = const [],
@@ -56,6 +58,9 @@ class TeamModel {
   final int followers;
   final String league;
   final List<Color> colors;
+  final List<String> twitterAccounts;
+  final String searchQuery;
+  final int order;
 
   const TeamModel({
     required this.id,
@@ -66,6 +71,9 @@ class TeamModel {
     this.followers = 0,
     this.league = '',
     this.colors = const [],
+    this.twitterAccounts = const [],
+    this.searchQuery = '',
+    this.order = 0,
   });
 }
 

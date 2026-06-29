@@ -1,16 +1,11 @@
 import 'package:atlas/core/api/xquik_service.dart';
+import 'package:atlas/core/services/firestore_service.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:get/get.dart';
 
-/// Takım sekmesi için tanım — sadece isim + arama sorgusu (feed verisi değil).
-class TeamFeedDef {
-  final String label;
-  final String query;
-  const TeamFeedDef(this.label, this.query);
-}
-
 class HomeController extends GetxController {
   final XquikService _xquik = XquikService();
+  final FirestoreService _firestore = FirestoreService();
 
   final feedTweets = <TweetModel>[].obs;
   final trendingTweets = <TweetModel>[].obs;
@@ -23,6 +18,7 @@ class HomeController extends GetxController {
   final isLoadingTrends = false.obs;
   final isLoadingTransfer = false.obs;
   final isLoadingTeam = false.obs;
+  final isLoadingTeams = false.obs;
 
   final feedError = ''.obs;
   final trendingError = ''.obs;
@@ -33,24 +29,13 @@ class HomeController extends GetxController {
   final searchResults = <TweetModel>[].obs;
   final isLoadingSearch = false.obs;
 
+  // Firebase'den gelen dinamik takımlar
+  final dynamicTeams = <TeamModel>[].obs;
+
   String? _feedCursor;
   final hasMoreFeed = true.obs;
 
-  // Takım sekmesindeki seçili takım
   final selectedTeam = 0.obs;
-
-  static const List<TeamFeedDef> teams = [
-    TeamFeedDef('Galatasaray',
-        '(#Galatasaray OR #GalatasaraySK OR from:GalatasaraySK) lang:tr'),
-    TeamFeedDef('Fenerbahçe',
-        '(#Fenerbahçe OR #Fenerbahce OR from:Fenerbahce) lang:tr'),
-    TeamFeedDef(
-        'Beşiktaş', '(#Beşiktaş OR #Besiktas OR from:Besiktas) lang:tr'),
-    TeamFeedDef('Trabzonspor',
-        '(#Trabzonspor OR #TrabzonsporPro OR from:Trabzonspor) lang:tr'),
-    TeamFeedDef('Milli Takım',
-        '(#MilliTakım OR #TürkiyeMilliTakımı OR "A Milli") lang:tr'),
-  ];
 
   @override
   void onInit() {
@@ -59,11 +44,25 @@ class HomeController extends GetxController {
     loadTrending();
     loadTrends();
     loadTransfer();
-    loadTeam(0);
+    loadTeamsFromFirebase();
   }
 
-  Future<void> loadFeed(
-      {String category = '', String? customQuery, bool refresh = false}) async {
+  Future<void> loadTeamsFromFirebase() async {
+    isLoadingTeams.value = true;
+    try {
+      final teams = await _firestore.getTeams();
+      dynamicTeams.assignAll(teams);
+      if (teams.isNotEmpty) {
+        await loadTeam(0);
+      }
+    } catch (e) {
+      // Firebase'e erişilemezse boş bırak
+    } finally {
+      isLoadingTeams.value = false;
+    }
+  }
+
+  Future<void> loadFeed({String category = '', String? customQuery, bool refresh = false}) async {
     if (refresh) {
       _feedCursor = null;
       hasMoreFeed.value = true;
@@ -96,8 +95,7 @@ class HomeController extends GetxController {
     trendingError.value = '';
     try {
       final tweets = await _xquik.searchTweets(
-        customQuery:
-            '(#Galatasaray OR #Fenerbahçe OR #Beşiktaş OR #SüperLig) lang:tr',
+        customQuery: '(#Galatasaray OR #Fenerbahçe OR #Beşiktaş OR #SüperLig) lang:tr',
         limit: 15,
       );
       trendingTweets.assignAll(tweets);
@@ -138,16 +136,21 @@ class HomeController extends GetxController {
   }
 
   Future<void> loadTeam(int index) async {
-    if (index < 0 || index >= teams.length) return;
+    if (index < 0 || index >= dynamicTeams.length) return;
     selectedTeam.value = index;
     isLoadingTeam.value = true;
     teamError.value = '';
     teamTweets.clear();
     try {
-      final tweets = await _xquik.searchTweets(
-        customQuery: teams[index].query,
-        limit: 20,
-      );
+      final team = dynamicTeams[index];
+      List<TweetModel> tweets;
+      if (team.twitterAccounts.isNotEmpty) {
+        tweets = await _xquik.getPopularTweetsForAccounts(team.twitterAccounts);
+      } else if (team.searchQuery.isNotEmpty) {
+        tweets = await _xquik.searchTweets(customQuery: team.searchQuery, limit: 20);
+      } else {
+        tweets = [];
+      }
       teamTweets.assignAll(tweets);
     } catch (e) {
       teamError.value = e.toString();
@@ -165,10 +168,7 @@ class HomeController extends GetxController {
     isLoadingSearch.value = true;
     searchResults.clear();
     try {
-      final tweets = await _xquik.searchTweets(
-        customQuery: '$q lang:tr',
-        limit: 20,
-      );
+      final tweets = await _xquik.searchTweets(customQuery: '$q lang:tr', limit: 20);
       searchResults.assignAll(tweets);
     } catch (_) {
       searchResults.clear();
@@ -188,5 +188,9 @@ class HomeController extends GetxController {
       loadTrends(),
       loadTransfer(),
     ]);
+  }
+
+  Future<void> reloadTeams() async {
+    await loadTeamsFromFirebase();
   }
 }

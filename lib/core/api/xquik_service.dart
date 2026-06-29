@@ -67,6 +67,24 @@ class XquikService {
     return merged;
   }
 
+  /// Belirli hesaplardan en popüler tweetleri çek (views > likes > retweets öncelikli)
+  Future<List<TweetModel>> getPopularTweetsForAccounts(
+    List<String> accounts, {
+    int perAccount = 10,
+    int limit = 20,
+  }) async {
+    if (accounts.isEmpty) return [];
+    final futures = accounts.map((u) => getUserTimeline(u, limit: perAccount).catchError((_) => <TweetModel>[]));
+    final results = await Future.wait(futures);
+    final merged = results.expand((list) => list).toList();
+    merged.sort((a, b) {
+      final aScore = a.views > 0 ? a.views : (a.likes * 100 + a.retweets * 200);
+      final bScore = b.views > 0 ? b.views : (b.likes * 100 + b.retweets * 200);
+      return bScore.compareTo(aScore);
+    });
+    return merged.take(limit).toList();
+  }
+
   /// Türkiye trend konuları (woeid: 23424969)
   Future<List<TrendTopic>> getTrends() async {
     final response = await _dio.get('/x/trends', queryParameters: {'woeid': 23424969});
@@ -181,6 +199,7 @@ class XquikService {
       final likes = _parseInt(metrics['likeCount'] ?? metrics['favorite_count'] ?? metrics['likes'] ?? 0);
       final retweets = _parseInt(metrics['retweetCount'] ?? metrics['retweet_count'] ?? metrics['retweets'] ?? 0);
       final replies = _parseInt(metrics['replyCount'] ?? metrics['reply_count'] ?? metrics['replies'] ?? 0);
+      final views = _parseInt(metrics['viewCount'] ?? metrics['view_count'] ?? metrics['impressionCount'] ?? metrics['impression_count'] ?? 0);
       final tweetUrl = t['url']?.toString() ?? (handle.isNotEmpty && id.isNotEmpty ? 'https://x.com/$handle/status/$id' : null);
 
       if (id.isEmpty || content.isEmpty) return null;
@@ -195,6 +214,7 @@ class XquikService {
         likes: likes,
         retweets: retweets,
         replies: replies,
+        views: views,
         tweetUrl: tweetUrl,
         isVerified: isVerified,
         tags: _inferTags(content, handle),
