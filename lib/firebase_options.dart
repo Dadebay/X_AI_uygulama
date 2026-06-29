@@ -47,12 +47,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDLCLu03HAVyg7Q4Q03-MNG-EjiDsx_ZP0',
-    appId: '1:256538135498:web:000000000000000000',
-    messagingSenderId: '256538135498',
-    projectId: 'ter-market-504b7',
-    authDomain: 'ter-market-504b7.firebaseapp.com',
-    storageBucket: 'ter-market-504b7.firebasestorage.app',
+    apiKey: 'AIzaSyC71wV3MhefrIOKiFb83FPIOciBdPMCY3s',
+    appId: '1:938508656367:web:bec2df9bf7fb0c0309051a',
+    messagingSenderId: '938508656367',
+    projectId: 'xaiuygulama',
+    authDomain: 'xaiuygulama.firebaseapp.com',
+    storageBucket: 'xaiuygulama.firebasestorage.app',
+    measurementId: 'G-107VTXTZ6D',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
