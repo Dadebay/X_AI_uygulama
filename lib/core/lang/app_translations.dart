@@ -41,6 +41,7 @@ class AppTranslations extends Translations {
     'transfer_agenda': 'Transfer Gündemi',
     'teams_communities': 'Takımlar ve Topluluklar',
     'league_standings': 'Lig Sıralamaları & Detayları',
+    'sponsored': 'Sponsorlu',
 
     // Explore
     'explore_title': 'Keşfet',
@@ -139,8 +140,9 @@ class AppTranslations extends Translations {
     'loading': 'Yükleniyor...',
     'content_load_error': 'İçerik yüklenemedi',
     'no_internet': 'İnternet bağlantısı yok',
-    'no_internet_desc': 'Lütfen bağlantınızı kontrol edin.',
+    'no_internet_desc': 'Devam etmek için internete bağlanın ve tekrar deneyin.',
     'check_connection': 'Bağlantıyı Kontrol Et',
+    'no_internet_retry_failed': 'İnternete bağlanılamadı. Tekrar deneyin.',
     'days_ago': 'gün önce',
     'hours_ago': 'sa',
     'minutes_ago': 'dk',
@@ -170,6 +172,12 @@ class AppTranslations extends Translations {
     'about_us': 'Hakkımızda',
     'about': 'Hakkında',
     'error_occurred': 'Bir hata oluştu',
+
+    // Medya görüntüleyici (resim tam ekran)
+    'success': 'Başarılı',
+    'image_saved_gallery': 'Görsel galeriye kaydedildi',
+    'image_share_title': 'Paylaş',
+    'image_sharing_desc': 'Görsel paylaşılıyor...',
   };
 
   static const Map<String, String> _en = {
@@ -203,6 +211,7 @@ class AppTranslations extends Translations {
     'popular_agendas': 'Popular Topics',
     'transfer_agenda': 'Transfer News',
     'teams_communities': 'Teams & Communities',
+    'sponsored': 'Sponsored',
     'league_standings': 'League Standings & Details',
 
     // Explore
@@ -302,8 +311,9 @@ class AppTranslations extends Translations {
     'loading': 'Loading...',
     'content_load_error': 'Could not load content',
     'no_internet': 'No internet connection',
-    'no_internet_desc': 'Please check your connection.',
+    'no_internet_desc': 'Connect to the internet to continue and try again.',
     'check_connection': 'Check Connection',
+    'no_internet_retry_failed': 'Could not connect to the internet. Please try again.',
     'days_ago': 'd ago',
     'hours_ago': 'h',
     'minutes_ago': 'm',
@@ -333,6 +343,12 @@ class AppTranslations extends Translations {
     'about_us': 'About Us',
     'about': 'About',
     'error_occurred': 'An error occurred',
+
+    // Media viewer (fullscreen image)
+    'success': 'Success',
+    'image_saved_gallery': 'Image saved to gallery',
+    'image_share_title': 'Share',
+    'image_sharing_desc': 'Sharing image...',
   };
 
   static const Map<String, String> _ru = {
@@ -366,6 +382,7 @@ class AppTranslations extends Translations {
     'popular_agendas': 'Популярные темы',
     'transfer_agenda': 'Новости трансферов',
     'teams_communities': 'Команды и сообщества',
+    'sponsored': 'Реклама',
     'league_standings': 'Турнирная таблица',
 
     // Explore
@@ -465,8 +482,9 @@ class AppTranslations extends Translations {
     'loading': 'Загрузка...',
     'content_load_error': 'Не удалось загрузить контент',
     'no_internet': 'Нет подключения к интернету',
-    'no_internet_desc': 'Пожалуйста, проверьте подключение.',
+    'no_internet_desc': 'Подключитесь к интернету, чтобы продолжить, и попробуйте снова.',
     'check_connection': 'Проверить подключение',
+    'no_internet_retry_failed': 'Не удалось подключиться к интернету. Попробуйте снова.',
     'days_ago': 'дн. назад',
     'hours_ago': 'ч',
     'minutes_ago': 'мин',
@@ -495,5 +513,11 @@ class AppTranslations extends Translations {
     'about_us': 'О нас',
     'about': 'О приложении',
     'error_occurred': 'Произошла ошибка',
+
+    // Просмотр медиа (полноэкранное изображение)
+    'success': 'Успешно',
+    'image_saved_gallery': 'Изображение сохранено в галерею',
+    'image_share_title': 'Поделиться',
+    'image_sharing_desc': 'Отправка изображения...',
   };
 }

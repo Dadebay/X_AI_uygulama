@@ -18,9 +18,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final HomeController _ctrl;
+  late final TabController _tabController;
   AnimationController? _searchAnim;
   Animation<double>? _fadeAnim;
   Animation<Offset>? _slideAnim;
@@ -44,7 +44,24 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _ctrl = Get.put(HomeController());
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _initSearchAnim();
+  }
+
+  // Sekmeye geçildiğinde o sekmenin verisini (bir kez) yükler — tembel yükleme.
+  void _onTabChanged() {
+    switch (_tabController.index) {
+      case 1:
+        _ctrl.ensureTrendingLoaded();
+        break;
+      case 2:
+        _ctrl.ensureTeamsLoaded();
+        break;
+      case 3:
+        _ctrl.ensureTransferLoaded();
+        break;
+    }
   }
 
   void _initSearchAnim() {
@@ -62,6 +79,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
     _searchAnim?.dispose();
     _searchCtrl.dispose();
     _searchFocus.dispose();
@@ -101,126 +120,111 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
-    return DefaultTabController(
-      length: 4,
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: c.bg,
+      appBar: AppBar(
         backgroundColor: c.bg,
-        appBar: AppBar(
-          backgroundColor: c.bg,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          toolbarHeight: 56,
-          title: _searchOpen
-              ? SlideTransition(
-                  position: _slideAnim!,
-                  child: FadeTransition(
-                    opacity: _fadeAnim!,
-                    child: _SearchBar(
-                      ctrl: _searchCtrl,
-                      focus: _searchFocus,
-                      onClose: _closeSearch,
-                      onSubmit: _onSearchSubmit,
-                    ),
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        toolbarHeight: 56,
+        title: _searchOpen
+            ? SlideTransition(
+                position: _slideAnim!,
+                child: FadeTransition(
+                  opacity: _fadeAnim!,
+                  child: _SearchBar(
+                    ctrl: _searchCtrl,
+                    focus: _searchFocus,
+                    onClose: _closeSearch,
+                    onSubmit: _onSearchSubmit,
                   ),
-                )
-              : Row(
-                  children: [
-                    const Icon(HugeIcons.strokeRoundedPulse01,
-                        color: AppColors.primary, size: 28),
-                    const SizedBox(width: 8),
-                    Text('Pulse',
-                        style: TextStyle(
-                            color: c.textPrimary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                            fontFamily: 'Gilroy')),
-                  ],
                 ),
-          actions: _searchOpen
-              ? []
-              : [
-                  IconButton(
-                    icon: Icon(HugeIcons.strokeRoundedSearch01,
-                        color: c.textSecondary),
-                    onPressed: _openSearch,
-                  ),
-                  IconButton(
-                    icon: Icon(HugeIcons.strokeRoundedNotification01,
-                        color: c.textSecondary),
-                    onPressed: () => Get.to(
-                      () => const NotificationsScreen(),
-                      transition: Transition.cupertino,
-                    ),
-                  ),
+              )
+            : Row(
+                children: [
+                  const Icon(HugeIcons.strokeRoundedPulse01, color: AppColors.primary, size: 28),
+                  const SizedBox(width: 8),
+                  Text('Pulse', style: TextStyle(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.w900, fontFamily: 'Gilroy')),
                 ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(49),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TabBar(
-                  isScrollable: false,
-                  dividerColor: Colors.transparent,
-                  indicatorColor: AppColors.primary,
-                  indicatorWeight: 3,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  indicator: const UnderlineTabIndicator(
-                    borderSide:
-                        BorderSide(color: AppColors.primary, width: 3),
-                    insets: EdgeInsets.symmetric(horizontal: 6),
-                  ),
-                  labelColor: AppColors.primary,
-                  unselectedLabelColor: c.textSecondary,
-                  labelStyle: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 13,
-                      fontFamily: 'Gilroy'),
-                  unselectedLabelStyle: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      fontFamily: 'Gilroy'),
-                  tabs: [
-                    Tab(text: 'for_you'.tr),
-                    Tab(text: 'trending'.tr),
-                    Tab(text: 'teams'.tr),
-                    Tab(text: 'transfer'.tr),
-                  ],
+              ),
+        actions: _searchOpen
+            ? []
+            : [
+                IconButton(
+                  icon: Icon(HugeIcons.strokeRoundedSearch01, color: c.textSecondary),
+                  onPressed: _openSearch,
                 ),
-                Divider(color: c.divider, height: 1),
+                IconButton(
+                  icon: Icon(HugeIcons.strokeRoundedNotification01, color: c.textSecondary),
+                  onPressed: () => Get.to(
+                    () => const NotificationsScreen(),
+                    transition: Transition.cupertino,
+                  ),
+                ),
               ],
-            ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(49),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TabBar(
+                controller: _tabController,
+                isScrollable: false,
+                dividerColor: Colors.transparent,
+                indicatorColor: AppColors.primary,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.label,
+                indicator: const UnderlineTabIndicator(
+                  borderSide: BorderSide(color: AppColors.primary, width: 3),
+                  insets: EdgeInsets.symmetric(horizontal: 6),
+                ),
+                labelColor: AppColors.primary,
+                unselectedLabelColor: c.textSecondary,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, fontFamily: 'Gilroy'),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'Gilroy'),
+                tabs: [
+                  Tab(text: 'for_you'.tr),
+                  Tab(text: 'trending'.tr),
+                  Tab(text: 'teams'.tr),
+                  Tab(text: 'transfer'.tr),
+                ],
+              ),
+              Divider(color: c.divider, height: 1),
+            ],
           ),
         ),
-        body: Stack(
-          children: [
-            // ── Normal tab içeriği ──────────────────────────────
-            TabBarView(
-              physics: const BouncingScrollPhysics(),
-              children: [
-                ForYouTab(
-                  ctrl: _ctrl,
-                  categories: _categories,
-                  selectedCategory: _selectedCategory,
-                  onCategoryChange: (i, tag) {
-                    setState(() => _selectedCategory = i);
-                    _ctrl.onCategorySelected(i, tag);
-                  },
-                ),
-                TrendingTab(ctrl: _ctrl),
-                TeamsTab(ctrl: _ctrl),
-                TransferTab(ctrl: _ctrl),
-              ],
-            ),
-
-            // ── Search sonuçları overlay ────────────────────────
-            if (_searchOpen)
-              AnimatedOpacity(
-                opacity: _hasSearched ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 200),
-                child: _SearchOverlay(ctrl: _ctrl, query: _searchCtrl.text),
+      ),
+      body: Stack(
+        children: [
+          // ── Normal tab içeriği ──────────────────────────────
+          TabBarView(
+            controller: _tabController,
+            physics: const BouncingScrollPhysics(),
+            children: [
+              ForYouTab(
+                ctrl: _ctrl,
+                categories: _categories,
+                selectedCategory: _selectedCategory,
+                onSeeAllTrending: () => _tabController.animateTo(1),
+                onCategoryChange: (i, tag) {
+                  setState(() => _selectedCategory = i);
+                  _ctrl.onCategorySelected(i, tag);
+                },
               ),
-          ],
-        ),
+              TrendingTab(ctrl: _ctrl),
+              TeamsTab(ctrl: _ctrl),
+              TransferTab(ctrl: _ctrl),
+            ],
+          ),
+
+          // ── Search sonuçları overlay ────────────────────────
+          if (_searchOpen)
+            AnimatedOpacity(
+              opacity: _hasSearched ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: _SearchOverlay(ctrl: _ctrl, query: _searchCtrl.text),
+            ),
+        ],
       ),
     );
   }
@@ -258,18 +262,11 @@ class _SearchBar extends StatelessWidget {
               child: TextField(
                 controller: ctrl,
                 focusNode: focus,
-                style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 14,
-                    fontFamily: 'Gilroy'),
+                style: TextStyle(color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy'),
                 decoration: InputDecoration(
                   hintText: 'Ara...',
-                  hintStyle: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 14,
-                      fontFamily: 'Gilroy'),
-                  prefixIcon: Icon(HugeIcons.strokeRoundedSearch01,
-                      color: c.textMuted, size: 18),
+                  hintStyle: TextStyle(color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
+                  prefixIcon: Icon(HugeIcons.strokeRoundedSearch01, color: c.textMuted, size: 18),
                   border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 10),
                 ),
@@ -281,12 +278,7 @@ class _SearchBar extends StatelessWidget {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: onClose,
-            child: const Text('İptal',
-                style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Gilroy')),
+            child: const Text('İptal', style: TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w600, fontFamily: 'Gilroy')),
           ),
         ],
       ),
@@ -328,15 +320,11 @@ class _SearchOverlay extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(HugeIcons.strokeRoundedSearch01,
-                    color: c.textMuted, size: 48),
+                Icon(HugeIcons.strokeRoundedSearch01, color: c.textMuted, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   '"$query" için sonuç bulunamadı',
-                  style: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 14,
-                      fontFamily: 'Gilroy'),
+                  style: TextStyle(color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
                   textAlign: TextAlign.center,
                 ),
               ],

@@ -11,7 +11,7 @@ class AuthService {
 
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
-  final _googleSignIn = GoogleSignIn();
+  late final GoogleSignIn? _googleSignIn = kIsWeb ? null : GoogleSignIn();
 
   User? get currentUser => _auth.currentUser;
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -20,7 +20,8 @@ class AuthService {
 
   // ─── Google Sign-In ──────────────────────────────────────────────────────
   Future<User?> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
+    if (_googleSignIn == null) return null;
+    final googleUser = await _googleSignIn!.signIn();
     if (googleUser == null) return null;
     final googleAuth = await googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
@@ -60,10 +61,8 @@ class AuthService {
   }
 
   Future<void> signOut() async {
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await _auth.signOut();
+    await _googleSignIn?.signOut();
   }
 
   // ─── Firestore: saved tweets ─────────────────────────────────────────────

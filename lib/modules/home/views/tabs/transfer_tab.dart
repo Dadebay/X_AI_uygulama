@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
+import 'package:atlas/widgets/pulse/tweet_shimmer.dart';
 import 'package:atlas/widgets/pulse/feed_states.dart';
 import 'package:atlas/modules/home/controllers/home_controller.dart';
 
@@ -20,9 +21,12 @@ class TransferTab extends StatelessWidget {
           child: ListView(
             children: [
               if (ctrl.isLoadingTransfer.value && ctrl.transferTweets.isEmpty)
-                kFeedLoading
-              else if (ctrl.transferError.value.isNotEmpty && ctrl.transferTweets.isEmpty)
-                FeedErrorState(message: ctrl.transferError.value, onRetry: ctrl.loadTransfer)
+                const TweetShimmerList()
+              else if (ctrl.transferError.value.isNotEmpty &&
+                  ctrl.transferTweets.isEmpty)
+                FeedErrorState(
+                    message: ctrl.transferError.value,
+                    onRetry: ctrl.loadTransfer)
               else if (ctrl.transferTweets.isEmpty)
                 const FeedEmptyState()
               else

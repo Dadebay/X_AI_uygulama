@@ -1,19 +1,21 @@
 import 'package:atlas/core/api/xquik_client.dart';
+import 'package:atlas/core/utils/football_trends.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 
 class XquikService {
   final Dio _dio = XquikClient.instance;
 
-  // Futbol hesapları — tweet kaynakları
+  // Futbol hesapları — tweet kaynakları (X'te doğrulanmış handle'lar)
   static const List<String> footballAccounts = [
     'FabrizioRomano',
-    'yagiz_sabuncuoglu',
+    'yagosabuncuoglu',
     'GalatasaraySK',
     'Fenerbahce',
-    'BJK',
+    'Besiktas',
     'NicoSchira',
-    'DisclosedTR',
+    'Disclosed',
     'TrollFootball',
   ];
 
@@ -49,22 +51,94 @@ class XquikService {
     return _parseTweetList(response.data);
   }
 
+  /// Tweet arama — sonsuz kaydırma için sonraki sayfa imlecini (cursor) de döndürür.
+  Future<({List<TweetModel> tweets, String? cursor})> searchTweetsPaged({
+    String category = '',
+    String? customQuery,
+    int limit = 20,
+    String? cursor,
+  }) async {
+    final query = customQuery ?? categoryQueries[category] ?? categoryQueries['']!;
+    final Map<String, dynamic> params = {
+      'q': query,
+      'limit': limit,
+      'retweets': false,
+    };
+    if (cursor != null && cursor.isNotEmpty) params['after'] = cursor;
+
+    final response = await _dio.get('/x/tweets/search', queryParameters: params);
+    final data = response.data;
+    final tweets = _parseTweetList(data);
+
+    String? next;
+    if (data is Map) {
+      final nc = data['next_cursor'];
+      final hasNext = data['has_next_page'];
+      if (nc is String && nc.isNotEmpty && hasNext != false) next = nc;
+    }
+    return (tweets: tweets, cursor: next);
+  }
+
   /// Belirli bir hesabın timeline'ı
   Future<List<TweetModel>> getUserTimeline(String username, {int limit = 10}) async {
+    // Panelden girilen handle'larda sık görülen baştaki "@" ve boşlukları temizle;
+    // aksi halde API bunları geçersiz kullanıcı adı sayıp 404 (user_not_found) döner.
+    final handle = username.trim().replaceAll('@', '');
     final response = await _dio.get(
-      '/x/users/$username/tweets',
+      '/x/users/$handle/tweets',
       queryParameters: {'limit': limit, 'replies': false},
     );
     return _parseTweetList(response.data);
   }
 
+  /// Hesap listesindeki her hesabın timeline'ını, aynı anda en fazla
+  /// [concurrency] istek olacak şekilde parçalar (batch) halinde çeker.
+  /// Çok sayıda hesapta (örn. 20 öncelikli hesap) tüm istekleri aynı anda
+  /// atmak API'yi/bağlantıyı boğup connection timeout'a yol açıyordu; bu
+  /// yöntem eşzamanlı istek sayısını sınırlayarak güvenilirliği artırır.
+  Future<List<List<TweetModel>>> _fetchTimelinesBatched(
+    List<String> accounts, {
+    required int perAccount,
+    int concurrency = 4,
+  }) async {
+    final results = <List<TweetModel>>[];
+    for (var i = 0; i < accounts.length; i += concurrency) {
+      final batch = accounts.skip(i).take(concurrency);
+      final batchResults = await Future.wait(
+        batch.map((u) => getUserTimeline(u, limit: perAccount).catchError((e) => _logAccountFetchError(u, e))),
+      );
+      results.addAll(batchResults);
+    }
+    return results;
+  }
+
   /// Birden fazla hesabın tweetlerini çek, likes'a göre sırala
   Future<List<TweetModel>> getMultiAccountFeed({int perAccount = 5}) async {
-    final futures = footballAccounts.map((u) => getUserTimeline(u, limit: perAccount).catchError((_) => <TweetModel>[]));
-    final results = await Future.wait(futures);
+    final results = await _fetchTimelinesBatched(footballAccounts, perAccount: perAccount);
     final merged = results.expand((list) => list).toList();
     merged.sort((a, b) => b.likes.compareTo(a.likes));
     return merged;
+  }
+
+  /// Belirli hesapların en son tweetlerini, hesaplar arası dengeli şekilde (round-robin)
+  /// kronolojik sırayla getirir — tek bir hesap listeyi domine etmesin diye.
+  Future<List<TweetModel>> getLatestTweetsForAccounts(
+    List<String> accounts, {
+    int perAccount = 5,
+    int limit = 25,
+  }) async {
+    if (accounts.isEmpty) return [];
+    final perAccountLists = await _fetchTimelinesBatched(accounts, perAccount: perAccount);
+    final result = <TweetModel>[];
+    var i = 0;
+    while (result.length < limit && perAccountLists.any((l) => i < l.length)) {
+      for (final list in perAccountLists) {
+        if (i < list.length) result.add(list[i]);
+        if (result.length >= limit) break;
+      }
+      i++;
+    }
+    return result;
   }
 
   /// Belirli hesaplardan en popüler tweetleri çek (views > likes > retweets öncelikli)
@@ -74,8 +148,7 @@ class XquikService {
     int limit = 20,
   }) async {
     if (accounts.isEmpty) return [];
-    final futures = accounts.map((u) => getUserTimeline(u, limit: perAccount).catchError((_) => <TweetModel>[]));
-    final results = await Future.wait(futures);
+    final results = await _fetchTimelinesBatched(accounts, perAccount: perAccount);
     final merged = results.expand((list) => list).toList();
     merged.sort((a, b) {
       final aScore = a.views > 0 ? a.views : (a.likes * 100 + a.retweets * 200);
@@ -85,12 +158,21 @@ class XquikService {
     return merged.take(limit).toList();
   }
 
-  /// Türkiye trend konuları (woeid: 23424969)
-  Future<List<TrendTopic>> getTrends() async {
+  /// Türkiye futbol gündemi (woeid: 23424969).
+  ///
+  /// X'in Türkiye trend listesi genel gündemi döndürdüğü için sonuçlar
+  /// [filterFootballTrends] ile süzülür. Futbolla ilgili yeterli trend
+  /// çıkmazsa liste, güncel futbol tweetlerinde en çok geçen hashtag'lerle
+  /// tamamlanır — böylece "Popüler Gündemler" hiçbir zaman siyaset/magazin
+  /// başlıklarıyla dolmaz.
+  Future<List<TrendTopic>> getTrends({
+    bool footballOnly = true,
+    int minCount = 8,
+  }) async {
     final response = await _dio.get('/x/trends', queryParameters: {'woeid': 23424969});
     final data = response.data;
     final List items = data is List ? data : (data['trends'] ?? data['data'] ?? []);
-    return items.asMap().entries.map((e) {
+    final all = items.asMap().entries.map((e) {
       final item = e.value as Map<String, dynamic>;
       return TrendTopic(
         rank: e.key + 1,
@@ -98,6 +180,55 @@ class XquikService {
         postCount: _formatCount(item['tweet_volume'] ?? item['tweetVolume'] ?? 0),
       );
     }).toList();
+
+    if (!footballOnly) return all;
+
+    final football = filterFootballTrends(all);
+    if (football.length >= minCount) return football;
+
+    final derived = await _trendsFromFootballTweets(
+      exclude: football.map((t) => normalizeTrendName(t.name)).toSet(),
+      limit: minCount - football.length,
+    );
+    final merged = [...football, ...derived];
+    return [
+      for (var i = 0; i < merged.length; i++)
+        TrendTopic(rank: i + 1, name: merged[i].name, postCount: merged[i].postCount),
+    ];
+  }
+
+  /// Güncel futbol tweetlerindeki hashtag'leri sıklığa göre trend listesine çevirir.
+  Future<List<TrendTopic>> _trendsFromFootballTweets({
+    required Set<String> exclude,
+    required int limit,
+  }) async {
+    if (limit <= 0) return [];
+    try {
+      final tweets = await searchTweets(limit: 50);
+      final counts = <String, int>{};
+      final labels = <String, String>{};
+      for (final tweet in tweets) {
+        for (final raw in tweet.tags) {
+          // Kaynak sorgu zaten futbol olduğu için hashtag'lere ayrıca
+          // anahtar kelime filtresi uygulamıyoruz; böylece oyuncu/teknik
+          // direktör isimleri (#Osimhen gibi) de gündeme girebiliyor.
+          final tag = raw.replaceAll('#', '').trim();
+          if (tag.isEmpty) continue;
+          final key = normalizeTrendName(tag);
+          if (exclude.contains(key)) continue;
+          counts[key] = (counts[key] ?? 0) + 1;
+          labels.putIfAbsent(key, () => tag);
+        }
+      }
+      final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+      return sorted
+          .take(limit)
+          .map((e) => TrendTopic(rank: 0, name: labels[e.key]!, postCount: '${e.value} gönderi'))
+          .toList();
+    } catch (e) {
+      if (kDebugMode) print('[XquikService] hashtag trendleri çıkarılamadı: $e');
+      return [];
+    }
   }
 
   /// Tweet beğen
@@ -172,6 +303,11 @@ class XquikService {
         .toList();
   }
 
+  List<TweetModel> _logAccountFetchError(String username, Object e) {
+    if (kDebugMode) print('[Xquik] @$username timeline çekilemedi: $e');
+    return <TweetModel>[];
+  }
+
   // ─── Parse Helpers ────────────────────────────────────────────────────────
 
   List<TweetModel> _parseTweetList(dynamic data) {
@@ -181,12 +317,18 @@ class XquikService {
     } else if (data is Map) {
       items = data['tweets'] ?? data['data'] ?? data['results'] ?? data['items'] ?? [];
     }
-    return items.map((e) => _parseSingleTweet(e as Map<String, dynamic>)).whereType<TweetModel>().toList();
+    final parsed = items.map((e) => _parseSingleTweet(e as Map<String, dynamic>)).whereType<TweetModel>().toList();
+    if (kDebugMode && parsed.length != items.length) {
+      print('[Xquik] parse: ${items.length} ham öğeden ${parsed.length} tanesi tweet olarak ayrıştırıldı, ${items.length - parsed.length} tanesi elendi');
+    }
+    return parsed;
   }
 
   TweetModel? _parseSingleTweet(Map<String, dynamic> t) {
     try {
       final author = t['author'] ?? t['user'] ?? {};
+      // Xquik metrikleri tweet objesinin doğrudan üstünde (flat) döndürür;
+      // publicMetrics/metrics nesting'i sadece ihtimale karşı fallback olarak tutuluyor.
       final metrics = t['publicMetrics'] ?? t['public_metrics'] ?? t['metrics'] ?? {};
 
       final id = t['id']?.toString() ?? t['tweetId']?.toString() ?? '';
@@ -196,13 +338,11 @@ class XquikService {
       final content = t['text']?.toString() ?? t['full_text']?.toString() ?? '';
       final createdAt = t['createdAt']?.toString() ?? t['created_at']?.toString() ?? '';
       final isVerified = author['isBlueVerified'] == true || author['verified'] == true;
-      final likes = _parseInt(metrics['likeCount'] ?? metrics['favorite_count'] ?? metrics['likes'] ?? 0);
-      final retweets = _parseInt(metrics['retweetCount'] ?? metrics['retweet_count'] ?? metrics['retweets'] ?? 0);
-      final replies = _parseInt(metrics['replyCount'] ?? metrics['reply_count'] ?? metrics['replies'] ?? 0);
-      final views = _parseInt(metrics['viewCount'] ?? metrics['view_count'] ?? metrics['impressionCount'] ?? metrics['impression_count'] ?? 0);
+      final likes = _parseInt(t['likeCount'] ?? metrics['likeCount'] ?? metrics['favorite_count'] ?? metrics['likes'] ?? 0);
+      final retweets = _parseInt(t['retweetCount'] ?? metrics['retweetCount'] ?? metrics['retweet_count'] ?? metrics['retweets'] ?? 0);
+      final replies = _parseInt(t['replyCount'] ?? metrics['replyCount'] ?? metrics['reply_count'] ?? metrics['replies'] ?? 0);
+      final views = _parseInt(t['viewCount'] ?? metrics['viewCount'] ?? metrics['view_count'] ?? metrics['impressionCount'] ?? metrics['impression_count'] ?? 0);
       final tweetUrl = t['url']?.toString() ?? (handle.isNotEmpty && id.isNotEmpty ? 'https://x.com/$handle/status/$id' : null);
-
-      if (id.isEmpty || content.isEmpty) return null;
 
       return TweetModel(
         id: id,
@@ -220,7 +360,8 @@ class XquikService {
         tags: _inferTags(content, handle),
         media: _parseMedia(t['media']),
       );
-    } catch (_) {
+    } catch (e, st) {
+      if (kDebugMode) print('[Xquik] tweet parse hatası: $e\n$st\nham veri: $t');
       return null;
     }
   }
@@ -231,9 +372,7 @@ class XquikService {
     for (final item in raw) {
       if (item is! Map) continue;
       final type = item['type']?.toString() ?? 'photo';
-      final url = item['media_url_https']?.toString() ??
-          item['url']?.toString() ??
-          '';
+      final url = item['media_url_https']?.toString() ?? item['url']?.toString() ?? '';
       if (url.isEmpty) continue;
       // metin içindeki t.co linkleri görsel değil, sadece gerçek media_url'leri al
       if (!url.contains('pbs.twimg.com') && !url.contains('twimg.com')) {
@@ -262,6 +401,7 @@ class XquikService {
   int _parseInt(dynamic v) {
     if (v == null) return 0;
     if (v is int) return v;
+    if (v is num) return v.toInt();
     return int.tryParse(v.toString()) ?? 0;
   }
 
@@ -301,8 +441,18 @@ class XquikService {
 
     // Twitter formatı: "Wed Jun 17 08:18:41 +0000 2026"
     final months = {
-      'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-      'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
+      'Jan': 1,
+      'Feb': 2,
+      'Mar': 3,
+      'Apr': 4,
+      'May': 5,
+      'Jun': 6,
+      'Jul': 7,
+      'Aug': 8,
+      'Sep': 9,
+      'Oct': 10,
+      'Nov': 11,
+      'Dec': 12,
     };
     final parts = raw.split(' ');
     // parts: [Wed, Jun, 17, 08:18:41, +0000, 2026]

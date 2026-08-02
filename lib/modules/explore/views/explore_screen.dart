@@ -111,13 +111,24 @@ class _DefaultContent extends StatelessWidget {
   final ExploreController ctrl;
   const _DefaultContent({required this.ctrl});
 
+  // Liste dibine yaklaşınca sonraki popüler tweet sayfasını çek (sonsuz kaydırma).
+  bool _onScroll(ScrollNotification notification) {
+    if (notification.metrics.pixels >=
+        notification.metrics.maxScrollExtent - 400) {
+      ctrl.loadMorePopular();
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: ctrl.refresh,
-      child: ListView(
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScroll,
+        child: ListView(
         padding: const EdgeInsets.only(bottom: 20),
         children: [
           // ── Trend Konular ──
@@ -209,7 +220,23 @@ class _DefaultContent extends StatelessWidget {
                   .toList(),
             );
           }),
+
+          // Sonsuz kaydırma: dibe gelince sonraki sayfa yüklenirken gösterge
+          Obx(() => ctrl.isLoadingMorePopular.value
+              ? const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2.5, color: AppColors.primary),
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink()),
         ],
+      ),
       ),
     );
   }

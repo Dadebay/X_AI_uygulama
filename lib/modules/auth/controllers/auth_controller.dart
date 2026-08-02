@@ -22,11 +22,18 @@ class AuthController extends GetxController {
   String get email => user.value?.email ?? '';
   String get photoUrl => user.value?.photoURL ?? '';
 
+  /// Kullanıcının giriş yaptığı sağlayıcı: "google.com", "apple.com" vb.
+  /// providerData boşsa (ör. anonim) boş döner.
+  String get providerId =>
+      user.value?.providerData.isNotEmpty == true ? user.value!.providerData.first.providerId : '';
+
   Future<void> signInWithGoogle() async {
     isLoading.value = true;
     errorMsg.value = '';
     try {
       await _service.signInWithGoogle();
+      // Giriş başarılı: LoginScreen'i kapatıp kullanıcıyı geldiği ekrana döndür.
+      if (Get.key.currentState?.canPop() ?? false) Get.back();
     } catch (e) {
       errorMsg.value = e.toString();
     } finally {
@@ -39,6 +46,7 @@ class AuthController extends GetxController {
     errorMsg.value = '';
     try {
       await _service.signInWithApple();
+      if (Get.key.currentState?.canPop() ?? false) Get.back();
     } catch (e) {
       errorMsg.value = e.toString();
     } finally {

@@ -9,6 +9,25 @@ class FirestoreService {
 
   final _db = FirebaseFirestore.instance;
 
+  Map<String, dynamic>? _settingsCache;
+
+  /// `config/settings` dokümanını tek seferde okur ve cache'ler; aynı doküman
+  /// için tekrarlanan network round-trip'leri önler.
+  Future<Map<String, dynamic>> getSettings({bool forceRefresh = false}) async {
+    if (!forceRefresh && _settingsCache != null) return _settingsCache!;
+    try {
+      final snap = await _db.collection('config').doc('settings').get();
+      _settingsCache = snap.data() ?? {};
+    } catch (_) {
+      _settingsCache = {};
+    }
+    return _settingsCache!;
+  }
+
+  void _patchSettingsCache(Map<String, dynamic> patch) {
+    _settingsCache = {...?_settingsCache, ...patch};
+  }
+
   Future<Map<String, dynamic>?> getDocument(String collection, String docId) async {
     final snap = await _db.collection(collection).doc(docId).get();
     return snap.exists ? snap.data() : null;
@@ -51,12 +70,87 @@ class FirestoreService {
   }
 
   Future<String> getAdminPin() async {
-    try {
-      final snap = await _db.collection('config').doc('settings').get();
-      return snap.data()?['adminPin']?.toString() ?? '2024';
-    } catch (_) {
-      return '2024';
-    }
+    final settings = await getSettings();
+    return settings['adminPin']?.toString() ?? '2024';
+  }
+
+  /// Ana sayfada tüm günlük tweetleri filtresiz gösterilecek öncelikli hesaplar
+  Future<List<String>> getPriorityAccounts() async {
+    final settings = await getSettings();
+    final raw = (settings['priorityAccounts'] as List<dynamic>?) ?? [];
+    return raw.map((a) => a.toString()).toList();
+  }
+
+  Future<void> setPriorityAccounts(List<String> accounts) async {
+    await _db.collection('config').doc('settings').set(
+      {'priorityAccounts': accounts},
+      SetOptions(merge: true),
+    );
+    _patchSettingsCache({'priorityAccounts': accounts});
+  }
+
+  /// Öncelikli hesaplar dışındaki tweetlerin gösterilmesi için gereken minimum
+  /// görüntülenme/beğeni sayısı
+  Future<int> getMinEngagementThreshold() async {
+    final settings = await getSettings();
+    return (settings['minEngagementThreshold'] as num?)?.toInt() ?? 500;
+  }
+
+  Future<void> setMinEngagementThreshold(int value) async {
+    await _db.collection('config').doc('settings').set(
+      {'minEngagementThreshold': value},
+      SetOptions(merge: true),
+    );
+    _patchSettingsCache({'minEngagementThreshold': value});
+  }
+
+  /// Reklamların uygulama genelinde açık/kapalı olduğunu kontrol eden bayrak
+  Future<bool> getAdsEnabled() async {
+    final settings = await getSettings();
+    return settings['adsEnabled'] as bool? ?? true;
+  }
+
+  Future<void> setAdsEnabled(bool value) async {
+    await _db.collection('config').doc('settings').set(
+      {'adsEnabled': value},
+      SetOptions(merge: true),
+    );
+    _patchSettingsCache({'adsEnabled': value});
+  }
+
+  /// Admin panelden reklam ayarı değiştiğinde açık uygulamalara anında yansıması için canlı akış
+  Stream<bool> watchAdsEnabled() {
+    return _db.collection('config').doc('settings').snapshots().map(
+      (snap) => snap.data()?['adsEnabled'] as bool? ?? true,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getUsers({int limit = 100}) async {
+    final snap = await _db.collection('users').orderBy('createdAt', descending: true).limit(limit).get();
+    return snap.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+  }
+
+  /// Cursor tabanlı sayfalama ile kullanıcı listesi çeker. `startAfter` verilirse
+  /// önceki sayfanın son dokümanından devam eder.
+  Future<UsersPage> getUsersPage({int limit = 25, DocumentSnapshot? startAfter}) async {
+    var q = _db.collection('users').orderBy('createdAt', descending: true).limit(limit);
+    if (startAfter != null) q = q.startAfterDocument(startAfter);
+    final snap = await q.get();
+    return UsersPage(
+      users: snap.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList(),
+      lastDoc: snap.docs.isEmpty ? null : snap.docs.last,
+      hasMore: snap.docs.length == limit,
+    );
+  }
+
+  Future<int> getUsersCount() async {
+    final snap = await _db.collection('users').count().get();
+    return snap.count ?? 0;
+  }
+
+  Future<int> getTeamsCount() async {
+    final snap = await _db.collection('teams').count().get();
+    return snap.count ?? 0;
   }
 
   Color? _hexToColor(String hex) {
@@ -67,4 +161,12 @@ class FirestoreService {
       return null;
     }
   }
+}
+
+class UsersPage {
+  final List<Map<String, dynamic>> users;
+  final DocumentSnapshot? lastDoc;
+  final bool hasMore;
+
+  UsersPage({required this.users, required this.lastDoc, required this.hasMore});
 }

@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show InternetAddress;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,8 +37,8 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
     } else {
       setState(() => _isChecking = false);
       Get.snackbar(
-        'Näsazlyk',
-        'Internede birigip bolmady. Täzeden synanyşyň.',
+        'error'.tr,
+        'no_internet_retry_failed'.tr,
         // snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
@@ -62,20 +62,20 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                 color: AppColors.primary,
               ),
               const SizedBox(height: 30),
-              const Text(
-                'Internet birikmesi ýok',
+              Text(
+                'no_internet'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Gilroy',
                 ),
               ),
               const SizedBox(height: 15),
-              const Text(
-                'Dowam etmek üçin internete birigiň we täzeden synanyşyň.',
+              Text(
+                'no_internet_desc'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
                   fontFamily: 'Gilroy',
@@ -100,9 +100,9 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
                           strokeWidth: 2,
                         ),
                       )
-                    : const Text(
-                        'Täzeden synanyş',
-                        style: TextStyle(
+                    : Text(
+                        'retry'.tr,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,

@@ -5,7 +5,9 @@ import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
+import 'package:atlas/widgets/pulse/tweet_shimmer.dart';
 import 'package:atlas/widgets/pulse/feed_states.dart';
+import 'package:atlas/widgets/pulse/in_feed_banner_ad.dart';
 import 'package:atlas/modules/home/controllers/home_controller.dart';
 
 class TeamsTab extends StatelessWidget {
@@ -22,40 +24,63 @@ class TeamsTab extends StatelessWidget {
       if (ctrl.dynamicTeams.isEmpty) {
         return const FeedEmptyState();
       }
+      // See for_you_tab.dart for why this list is rendered via a lazy
+      // SliverList rather than a plain ListView(children:) — mounting every
+      // in-feed banner ad at once fires a burst of concurrent ad requests
+      // that AdMob throttles.
+      final feedItems = ctrl.isLoadingTeam.value && ctrl.teamTweets.isEmpty
+          ? null
+          : ctrl.teamError.value.isNotEmpty && ctrl.teamTweets.isEmpty
+              ? null
+              : ctrl.teamTweets.isEmpty
+                  ? null
+                  : interleaveBannerAds(ctrl.teamTweets
+                      .map((t) => TweetCard(
+                            tweetId: t.id,
+                            username: t.username,
+                            handle: t.handle,
+                            avatarUrl: t.avatarUrl,
+                            content: t.content,
+                            timeAgo: t.timeAgo,
+                            replies: t.replies,
+                            retweets: t.retweets,
+                            likes: t.likes,
+                            tweetUrl: t.tweetUrl,
+                            isVerified: t.isVerified,
+                            tags: t.tags,
+                            media: t.media,
+                          ))
+                      .toList());
+
       return RefreshIndicator(
         color: AppColors.primary,
         backgroundColor: c.surface,
         onRefresh: () => ctrl.loadTeam(ctrl.selectedTeam.value),
-        child: ListView(
-          padding: const EdgeInsets.only(top: 8, bottom: 20),
-          children: [
-            _TeamPicker(ctrl: ctrl),
-            const SizedBox(height: 4),
-            if (ctrl.isLoadingTeam.value && ctrl.teamTweets.isEmpty)
-              kFeedLoading
-            else if (ctrl.teamError.value.isNotEmpty && ctrl.teamTweets.isEmpty)
-              FeedErrorState(
-                message: ctrl.teamError.value,
-                onRetry: () => ctrl.loadTeam(ctrl.selectedTeam.value),
+        child: CustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            SliverToBoxAdapter(child: _TeamPicker(ctrl: ctrl)),
+            const SliverToBoxAdapter(child: SizedBox(height: 4)),
+            if (feedItems == null)
+              SliverToBoxAdapter(
+                child: ctrl.isLoadingTeam.value && ctrl.teamTweets.isEmpty
+                    ? const TweetShimmerList()
+                    : ctrl.teamError.value.isNotEmpty &&
+                            ctrl.teamTweets.isEmpty
+                        ? FeedErrorState(
+                            message: ctrl.teamError.value,
+                            onRetry: () => ctrl.loadTeam(ctrl.selectedTeam.value),
+                          )
+                        : const FeedEmptyState(),
               )
-            else if (ctrl.teamTweets.isEmpty)
-              const FeedEmptyState()
             else
-              ...ctrl.teamTweets.map((t) => TweetCard(
-                    tweetId: t.id,
-                    username: t.username,
-                    handle: t.handle,
-                    avatarUrl: t.avatarUrl,
-                    content: t.content,
-                    timeAgo: t.timeAgo,
-                    replies: t.replies,
-                    retweets: t.retweets,
-                    likes: t.likes,
-                    tweetUrl: t.tweetUrl,
-                    isVerified: t.isVerified,
-                    tags: t.tags,
-                    media: t.media,
-                  )),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) => feedItems[i],
+                  childCount: feedItems.length,
+                ),
+              ),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
         ),
       );
@@ -93,7 +118,8 @@ class _TeamPicker extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : Colors.transparent,
+                        color:
+                            isSelected ? AppColors.primary : Colors.transparent,
                         width: 2,
                       ),
                     ),
@@ -114,7 +140,8 @@ class _TeamPicker extends StatelessWidget {
                       color: isSelected
                           ? Tc.of(context).textPrimary
                           : Tc.of(context).textSecondary,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
                       fontSize: 12,
                       fontFamily: 'Gilroy',
                     ),

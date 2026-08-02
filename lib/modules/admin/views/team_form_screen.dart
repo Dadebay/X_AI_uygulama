@@ -4,6 +4,7 @@ import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/modules/admin/controllers/admin_controller.dart';
+import 'package:atlas/modules/admin/controllers/web_admin_controller.dart';
 
 class TeamFormScreen extends StatefulWidget {
   final TeamModel? team;
@@ -49,6 +50,11 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
         _color2Ctrl.text = _colorToHex(t.colors[1]);
       }
     }
+    _logoUrlCtrl.addListener(() => setState(() {}));
+    _color1Ctrl.addListener(() => setState(() {}));
+    _color2Ctrl.addListener(() => setState(() {}));
+    _nameCtrl.addListener(() => setState(() {}));
+    _shortNameCtrl.addListener(() => setState(() {}));
   }
 
   @override
@@ -69,10 +75,23 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
     return '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
   }
 
+  Color? _hexToColor(String hex) {
+    var h = hex.trim().replaceAll('#', '');
+    if (h.length != 6 && h.length != 8) return null;
+    if (h.length == 6) h = 'FF$h';
+    final value = int.tryParse(h, radix: 16);
+    if (value == null) return null;
+    return Color(value);
+  }
+
   void _addAccount() {
     final handle = _accountCtrl.text.trim().replaceAll('@', '');
     if (handle.isEmpty) return;
-    if (_accounts.contains(handle)) return;
+    if (_accounts.contains(handle)) {
+      Get.snackbar('Zaten eklendi', '@$handle zaten listede',
+          backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
+      return;
+    }
     setState(() {
       _accounts.add(handle);
       _accountCtrl.clear();
@@ -84,7 +103,20 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      Get.snackbar('Eksik bilgi', 'Lütfen kırmızı ile işaretli zorunlu alanları doldurun',
+          backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
+      return;
+    }
+    if (_accounts.isEmpty && _searchQueryCtrl.text.trim().isEmpty) {
+      Get.snackbar(
+        'Kaynak eksik',
+        'En az bir Twitter hesabı ekleyin veya yedek arama sorgusu yazın',
+        backgroundColor: const Color(0xFF1A1A1A),
+        colorText: Colors.white,
+      );
+      return;
+    }
     setState(() => _isSaving = true);
 
     final colors = <String>[];
@@ -103,12 +135,13 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
       'followers': 0,
     };
 
-    final ctrl = Get.find<AdminController>();
     bool success;
-    if (isEdit) {
-      success = await ctrl.updateTeam(widget.team!.id, data);
+    if (Get.isRegistered<WebAdminController>()) {
+      final ctrl = Get.find<WebAdminController>();
+      success = isEdit ? await ctrl.updateTeam(widget.team!.id, data) : await ctrl.addTeam(data);
     } else {
-      success = await ctrl.addTeam(data);
+      final ctrl = Get.find<AdminController>();
+      success = isEdit ? await ctrl.updateTeam(widget.team!.id, data) : await ctrl.addTeam(data);
     }
 
     setState(() => _isSaving = false);
@@ -118,6 +151,7 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
+    final previewColor = _hexToColor(_color1Ctrl.text) ?? AppColors.primary;
     return Scaffold(
       backgroundColor: c.bg,
       appBar: AppBar(
@@ -140,9 +174,13 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
               child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)),
             )
           else
-            TextButton(
-              onPressed: _save,
-              child: const Text('Kaydet', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Gilroy', fontSize: 15)),
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: TextButton.icon(
+                onPressed: _save,
+                icon: const Icon(Icons.check, color: AppColors.primary, size: 18),
+                label: const Text('Kaydet', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontFamily: 'Gilroy', fontSize: 15)),
+              ),
             ),
         ],
       ),
@@ -151,43 +189,152 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _SectionTitle('Temel Bilgiler'),
-            const SizedBox(height: 10),
-            _Field(controller: _nameCtrl, label: 'Takım Adı (örn: Galatasaray)', validator: _required),
-            const SizedBox(height: 10),
-            _Field(controller: _shortNameCtrl, label: 'Kısa Ad (örn: GS)', validator: _required),
-            const SizedBox(height: 10),
-            _Field(controller: _leagueCtrl, label: 'Lig (örn: Süper Lig)'),
-            const SizedBox(height: 10),
-            _Field(controller: _orderCtrl, label: 'Sıra (örn: 1)', keyboardType: TextInputType.number),
-            const SizedBox(height: 20),
+            // Canlı önizleme kartı
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: c.card,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: c.divider),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: previewColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: _logoUrlCtrl.text.trim().isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              _logoUrlCtrl.text.trim(),
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Center(
+                                child: Text(
+                                  _shortNameCtrl.text.isNotEmpty ? _shortNameCtrl.text[0].toUpperCase() : '?',
+                                  style: TextStyle(color: previewColor, fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Gilroy'),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Center(
+                            child: Text(
+                              _shortNameCtrl.text.isNotEmpty ? _shortNameCtrl.text[0].toUpperCase() : '?',
+                              style: TextStyle(color: previewColor, fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Gilroy'),
+                            ),
+                          ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _nameCtrl.text.trim().isNotEmpty ? _nameCtrl.text.trim() : 'Takım önizlemesi',
+                          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Gilroy'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Aşağıdaki alanları doldurdukça burası güncellenir',
+                          style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
 
-            _SectionTitle('Görsel'),
+            _SectionTitle(icon: Icons.info_outline, text: 'Temel Bilgiler'),
+            const SizedBox(height: 4),
+            _SectionHint('Takımın adı, kısa adı ve hangi ligde oynadığı bilgisi'),
+            const SizedBox(height: 12),
+            _Field(
+              controller: _nameCtrl,
+              label: 'Takım Adı',
+              hint: 'örn: Galatasaray',
+              icon: Icons.groups_outlined,
+              validator: _required,
+            ),
             const SizedBox(height: 10),
-            _Field(controller: _logoUrlCtrl, label: 'Logo URL (https://...)'),
+            _Field(
+              controller: _shortNameCtrl,
+              label: 'Kısa Ad',
+              hint: 'örn: GS  —  listelerde rozet olarak görünür',
+              icon: Icons.sell_outlined,
+              validator: _required,
+            ),
+            const SizedBox(height: 10),
+            _Field(
+              controller: _leagueCtrl,
+              label: 'Lig',
+              hint: 'örn: Süper Lig',
+              icon: Icons.emoji_events_outlined,
+            ),
+            const SizedBox(height: 10),
+            _Field(
+              controller: _orderCtrl,
+              label: 'Sıralama Numarası',
+              hint: 'Küçük sayı önce listelenir, örn: 1',
+              icon: Icons.sort,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 24),
+
+            _SectionTitle(icon: Icons.image_outlined, text: 'Görsel ve Renkler'),
+            const SizedBox(height: 4),
+            _SectionHint('Takımın logosu ve marka renkleri — uygulamada rozet ve vurgu rengi olarak kullanılır'),
+            const SizedBox(height: 12),
+            _Field(
+              controller: _logoUrlCtrl,
+              label: 'Logo Görsel Linki',
+              hint: 'https://... ile başlayan bir görsel adresi yapıştırın',
+              icon: Icons.link,
+            ),
             const SizedBox(height: 10),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _Field(controller: _color1Ctrl, label: 'Renk 1 (örn: #E8231A)')),
+                Expanded(
+                  child: _ColorField(
+                    controller: _color1Ctrl,
+                    label: 'Ana Renk',
+                    hint: '#E8231A',
+                    color: _hexToColor(_color1Ctrl.text),
+                  ),
+                ),
                 const SizedBox(width: 10),
-                Expanded(child: _Field(controller: _color2Ctrl, label: 'Renk 2 (örn: #FFD700)')),
+                Expanded(
+                  child: _ColorField(
+                    controller: _color2Ctrl,
+                    label: 'İkincil Renk (opsiyonel)',
+                    hint: '#FFD700',
+                    color: _hexToColor(_color2Ctrl.text),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            _SectionTitle('Twitter Hesapları'),
-            const SizedBox(height: 6),
-            Text(
-              'Bu takım için tweet çekilecek hesaplar (@olmadan)',
-              style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy'),
+            _SectionTitle(icon: Icons.alternate_email, text: 'Twitter Hesapları'),
+            const SizedBox(height: 4),
+            _SectionHint(
+              'Bu takım hakkında tweet çekilecek Twitter/X hesapları. "@" işareti yazmanıza gerek yok, birden fazla hesap ekleyebilirsiniz.',
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   child: _Field(
                     controller: _accountCtrl,
-                    label: 'Twitter kullanıcı adı (örn: FabrizioRomano)',
+                    label: 'Kullanıcı Adı',
+                    hint: 'örn: FabrizioRomano',
+                    icon: Icons.alternate_email,
                     onSubmitted: (_) => _addAccount(),
                   ),
                 ),
@@ -205,13 +352,30 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             if (_accounts.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text(
-                  'Henüz hesap eklenmedi',
-                  style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy'),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: c.card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: c.divider, style: BorderStyle.solid),
+                ),
+                child: Column(
+                  children: [
+                    Icon(Icons.alternate_email, color: c.textMuted, size: 22),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Henüz hesap eklenmedi',
+                      style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy', fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Yukarıdan bir kullanıcı adı ekleyin',
+                      style: TextStyle(color: c.textMuted, fontSize: 11, fontFamily: 'Gilroy'),
+                    ),
+                  ],
                 ),
               )
             else
@@ -236,7 +400,7 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
                           ),
                           trailing: GestureDetector(
                             onTap: () => _removeAccount(handle),
-                            child: Icon(Icons.close, color: AppColors.red, size: 18),
+                            child: const Icon(Icons.close, color: AppColors.red, size: 18),
                           ),
                         ),
                         if (i < _accounts.length - 1)
@@ -246,16 +410,20 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
                   }).toList(),
                 ),
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            _SectionTitle('Yedek Arama (İsteğe Bağlı)'),
-            const SizedBox(height: 6),
-            Text(
-              'Twitter hesabı yoksa bu hashtag sorgusu kullanılır',
-              style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy'),
+            _SectionTitle(icon: Icons.search, text: 'Yedek Arama (İsteğe Bağlı)'),
+            const SizedBox(height: 4),
+            _SectionHint(
+              'Takıma özel Twitter hesabı bulunmuyorsa, tweetler bu arama sorgusuyla toplanır. Boş bırakabilirsiniz, ancak yukarıda en az bir hesap veya bu sorgu dolu olmalı.',
             ),
-            const SizedBox(height: 10),
-            _Field(controller: _searchQueryCtrl, label: 'örn: (#Galatasaray OR from:GalatasaraySK) lang:tr'),
+            const SizedBox(height: 12),
+            _Field(
+              controller: _searchQueryCtrl,
+              label: 'Arama Sorgusu',
+              hint: '(#Galatasaray OR from:GalatasaraySK) lang:tr',
+              icon: Icons.search,
+            ),
             const SizedBox(height: 32),
           ],
         ),
@@ -267,21 +435,42 @@ class _TeamFormScreenState extends State<TeamFormScreen> {
 }
 
 class _SectionTitle extends StatelessWidget {
+  final IconData icon;
   final String text;
-  const _SectionTitle(this.text);
+  const _SectionTitle({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Tc.of(context);
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.primary, size: 16),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            fontFamily: 'Gilroy',
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionHint extends StatelessWidget {
+  final String text;
+  const _SectionHint(this.text);
 
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
     return Text(
       text,
-      style: TextStyle(
-        color: c.textSecondary,
-        fontSize: 13,
-        fontWeight: FontWeight.w700,
-        fontFamily: 'Gilroy',
-        letterSpacing: 0.5,
-      ),
+      style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy', height: 1.4),
     );
   }
 }
@@ -289,6 +478,8 @@ class _SectionTitle extends StatelessWidget {
 class _Field extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final String? hint;
+  final IconData? icon;
   final String? Function(String?)? validator;
   final TextInputType? keyboardType;
   final ValueChanged<String>? onSubmitted;
@@ -296,6 +487,8 @@ class _Field extends StatelessWidget {
   const _Field({
     required this.controller,
     required this.label,
+    this.hint,
+    this.icon,
     this.validator,
     this.keyboardType,
     this.onSubmitted,
@@ -311,8 +504,72 @@ class _Field extends StatelessWidget {
       onFieldSubmitted: onSubmitted,
       style: TextStyle(color: c.textPrimary, fontFamily: 'Gilroy', fontSize: 14),
       decoration: InputDecoration(
-        labelText: label,
+        labelText: validator != null ? '$label *' : label,
+        hintText: hint,
+        hintStyle: TextStyle(color: c.textMuted.withValues(alpha: 0.6), fontFamily: 'Gilroy', fontSize: 13),
         labelStyle: TextStyle(color: c.textMuted, fontFamily: 'Gilroy', fontSize: 13),
+        prefixIcon: icon != null ? Icon(icon, color: c.textMuted, size: 18) : null,
+        filled: true,
+        fillColor: c.card,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.red),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      ),
+    );
+  }
+}
+
+class _ColorField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final Color? color;
+
+  const _ColorField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Tc.of(context);
+    return TextFormField(
+      controller: controller,
+      style: TextStyle(color: c.textPrimary, fontFamily: 'Gilroy', fontSize: 14),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        hintStyle: TextStyle(color: c.textMuted.withValues(alpha: 0.6), fontFamily: 'Gilroy', fontSize: 13),
+        labelStyle: TextStyle(color: c.textMuted, fontFamily: 'Gilroy', fontSize: 13),
+        prefixIcon: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              color: color ?? c.divider,
+              shape: BoxShape.circle,
+              border: Border.all(color: c.divider),
+            ),
+          ),
+        ),
+        prefixIconConstraints: const BoxConstraints(minWidth: 44, minHeight: 20),
         filled: true,
         fillColor: c.card,
         border: OutlineInputBorder(

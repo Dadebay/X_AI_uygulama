@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:atlas/core/services/ad_service.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/modules/profile/views/premium_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,6 +16,23 @@ class AdOverlayScreen extends StatefulWidget {
 
   const AdOverlayScreen({super.key, required this.targetUrl});
 
+  /// Opens [targetUrl] through the ad overlay, unless ads are disabled from
+  /// the admin panel — in that case it opens the link directly.
+  static Future<void> open(
+    String targetUrl, {
+    Transition transition = Transition.fadeIn,
+    Duration duration = const Duration(milliseconds: 250),
+  }) async {
+    if (!AdService.adsEnabled) {
+      final uri = Uri.parse(targetUrl.startsWith('http') ? targetUrl : 'https://$targetUrl');
+      try {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (_) {}
+      return;
+    }
+    Get.to(() => AdOverlayScreen(targetUrl: targetUrl), transition: transition, duration: duration);
+  }
+
   @override
   State<AdOverlayScreen> createState() => _AdOverlayScreenState();
 }
@@ -23,6 +42,8 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
   int _remaining = _totalSeconds;
   Timer? _timer;
   late AnimationController _pulseCtrl;
+  InterstitialAd? _interstitialAd;
+  bool _adShown = false;
 
   @override
   void initState() {
@@ -42,24 +63,80 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
         t.cancel();
       }
     });
+
+    _loadInterstitial();
+  }
+
+  void _loadInterstitial() {
+    if (!AdService.isSupported) return;
+    InterstitialAd.load(
+      adUnitId: AdService.interstitialAdUnitId,
+      request: AdService.request,
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          AdService.log('Interstitial loaded OK (adUnitId=${AdService.interstitialAdUnitId})');
+          _interstitialAd = ad;
+          _showInterstitialIfReady();
+        },
+        onAdFailedToLoad: (error) {
+          AdService.log('Interstitial failed to load: code=${error.code} domain=${error.domain} message=${error.message}');
+          _interstitialAd = null;
+        },
+      ),
+    );
+  }
+
+  /// Replaces the static placeholder banner with the real AdMob interstitial
+  /// the instant it finishes loading, instead of waiting for the countdown
+  /// or the skip tap.
+  void _showInterstitialIfReady() {
+    if (_adShown || !mounted) return;
+    final ad = _interstitialAd;
+    if (ad == null) return;
+    _adShown = true;
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+        _finish();
+      },
+      onAdFailedToShowFullScreenContent: (ad, _) {
+        ad.dispose();
+        _interstitialAd = null;
+        _finish();
+      },
+    );
+    ad.show();
+  }
+
+  void _finish() {
+    if (!mounted) return;
+    Get.back();
+    _openTarget();
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     _pulseCtrl.dispose();
+    _interstitialAd?.dispose();
     super.dispose();
   }
 
   bool get _canSkip => _remaining <= 0;
 
+  Future<void> _openTarget() async {
+    final uri = Uri.parse(widget.targetUrl.startsWith('http') ? widget.targetUrl : 'https://${widget.targetUrl}');
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+  }
+
   Future<void> _handleSkip() async {
     if (_canSkip) {
-      Get.back();
-      final uri = Uri.parse(widget.targetUrl.startsWith('http') ? widget.targetUrl : 'https://${widget.targetUrl}');
-      try {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } catch (_) {}
+      // Gerçek reklam zaten otomatik gösterilmiş/kapatılmış olabilir; öyle
+      // değilse (yüklenemediyse) burada doğrudan hedefe geçiyoruz.
+      _finish();
     } else {
       // User wants to skip early → show premium
       Get.to(() => const PremiumScreen(), transition: Transition.cupertino);

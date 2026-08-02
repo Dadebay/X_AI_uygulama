@@ -11,6 +11,8 @@ import 'package:atlas/modules/auth/views/login_screen.dart';
 import 'package:atlas/modules/saved/controllers/saved_controller.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/widgets/app_network_image.dart';
+import 'package:atlas/widgets/full_screen_image_viewer.dart';
+import 'package:atlas/widgets/pulse/linkified_text.dart';
 import 'package:atlas/modules/post_detail/views/tweet_detail_screen.dart';
 
 class TweetCard extends StatelessWidget {
@@ -53,16 +55,26 @@ class TweetCard extends StatelessWidget {
 
   void _openOnX() {
     if (tweetUrl == null) return;
-    Get.to(
-      () => AdOverlayScreen(targetUrl: tweetUrl!),
-      transition: Transition.fadeIn,
-      duration: const Duration(milliseconds: 250),
-    );
+    AdOverlayScreen.open(tweetUrl!);
   }
 
   void _share() {
     final url = tweetUrl ?? 'https://x.com/$handle';
     Share.share('$content\n\n— @$handle\n$url');
+  }
+
+  void _openMediaViewer(int index) {
+    Get.to(
+      () => FullScreenImageViewer(
+        images: media.map((m) => m.url).toList(),
+        isVideo: media.map((m) => m.isVideo).toList(),
+        initialIndex: index,
+        heroTagPrefix: 'tweet_$tweetId',
+        onWatchVideo: (_) => _openOnX(),
+      ),
+      transition: Transition.fadeIn,
+      duration: const Duration(milliseconds: 250),
+    );
   }
 
   // Sondaki t.co medya linkini gizle (medya zaten kart içinde gösteriliyor)
@@ -202,15 +214,15 @@ class TweetCard extends StatelessWidget {
 
             // ── Content ──────────────────────────────────────────
             const SizedBox(height: 10),
-            Text(
-              _cleanContent(content),
+            LinkifiedText(
+              text: _cleanContent(content),
               style: TextStyle(color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy', height: 1.45),
             ),
 
             // ── Medya ────────────────────────────────────────────
             if (media.isNotEmpty) ...[
               const SizedBox(height: 10),
-              _MediaPreview(media: media, onVideoTap: _openOnX),
+              _MediaPreview(media: media, onTileTap: _openMediaViewer),
             ],
 
             // ── Stats + Actions ───────────────────────────────────
@@ -416,27 +428,30 @@ class _StatChip extends StatelessWidget {
 
 class _MediaPreview extends StatelessWidget {
   final List<TweetMedia> media;
-  final VoidCallback onVideoTap;
-  const _MediaPreview({required this.media, required this.onVideoTap});
+  final ValueChanged<int> onTileTap;
+  const _MediaPreview({required this.media, required this.onTileTap});
 
   @override
   Widget build(BuildContext context) {
     final items = media.take(4).toList();
+    const containerRatio = 16 / 10;
+    final rows = (items.length / 2).ceil();
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: AspectRatio(
-        aspectRatio: 16 / 10,
+        aspectRatio: containerRatio,
         child: items.length == 1
-            ? _MediaTile(item: items.first, onVideoTap: onVideoTap)
+            ? _MediaTile(item: items.first, onTap: () => onTileTap(0))
             : GridView.count(
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
-                children: items
-                    .map((m) =>
-                        _MediaTile(item: m, onVideoTap: onVideoTap))
-                    .toList(),
+                childAspectRatio: containerRatio * rows / 2,
+                children: [
+                  for (var i = 0; i < items.length; i++)
+                    _MediaTile(item: items[i], onTap: () => onTileTap(i)),
+                ],
               ),
       ),
     );
@@ -445,20 +460,21 @@ class _MediaPreview extends StatelessWidget {
 
 class _MediaTile extends StatelessWidget {
   final TweetMedia item;
-  final VoidCallback onVideoTap;
-  const _MediaTile({required this.item, required this.onVideoTap});
+  final VoidCallback onTap;
+  const _MediaTile({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
     return GestureDetector(
-      onTap: item.isVideo ? onVideoTap : null,
+      onTap: onTap,
       child: Stack(
         fit: StackFit.expand,
         children: [
           AppNetworkImage(
             url: item.url,
             fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
             backgroundColor: c.surface,
           ),
           if (item.isVideo)

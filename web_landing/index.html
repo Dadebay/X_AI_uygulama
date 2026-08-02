@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulse Sports — Futbolun nabzı, tek ekranda</title>
+<meta name="description" content="Transferler, gündem, takım haberleri ve sosyal medya akışı tek uygulamada. Pulse Sports'u iOS ve Android için ücretsiz indir.">
+<link rel="canonical" href="https://xaiuygulama.web.app/">
+<meta name="theme-color" content="#0A0A0A">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pulse Sports — Futbolun nabzı, tek ekranda">
+<meta property="og:description" content="Transferler, gündem, takım haberleri ve sosyal medya akışı tek uygulamada.">
+<meta property="og:image" content="https://xaiuygulama.web.app/assets/og-image.png">
+<meta property="og:url" content="https://xaiuygulama.web.app/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="apple-itunes-app" content="app-id=6790100133">
+
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+<link rel="preload" as="font" type="font/woff2" href="fonts/Gilroy-Regular.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/Gilroy-Bold.woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "Pulse Sports",
+  "operatingSystem": "iOS 15.6+, Android",
+  "applicationCategory": "SportsApplication",
+  "description": "Canlı futbol haberleri, transferler, gündem ve sosyal medya akışı.",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Organization", "name": "Vectora Digital LLC" },
+  "downloadUrl": [
+    "https://apps.apple.com/us/app/pulse-sports/id6790100133",
+    "https://play.google.com/store/apps/details?id=com.gurbanov.xai"
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="navbar" id="navbar">
+  <div class="container">
+    <a href="#top" class="nav-brand">
+      <img src="assets/nav-mark.png" width="30" height="30" alt="Pulse Sports logosu">
+      <span>Pulse Sports</span>
+    </a>
+
+    <nav aria-label="Ana menü">
+      <ul class="nav-links">
+        <li><a href="#features" data-i18n="nav.features">Özellikler</a></li>
+        <li><a href="#screens" data-i18n="nav.screens">Ekranlar</a></li>
+        <li><a href="#faq" data-i18n="nav.faq">SSS</a></li>
+        <li><a href="#contact" data-i18n="nav.contact">İletişim</a></li>
+      </ul>
+    </nav>
+
+    <div class="nav-right">
+      <div class="lang-switch" role="group" aria-label="Dil seçimi">
+        <button type="button" data-lang="tr" class="active">TR</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <a href="/admin/" class="btn btn-ghost" data-i18n="nav.admin">Admin Giriş</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menüyü aç" aria-expanded="false" aria-controls="navMobile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="nav-mobile" id="navMobile">
+    <a href="#features" data-i18n="nav.features">Özellikler</a>
+    <a href="#screens" data-i18n="nav.screens">Ekranlar</a>
+    <a href="#faq" data-i18n="nav.faq">SSS</a>
+    <a href="#contact" data-i18n="nav.contact">İletişim</a>
+    <a href="/admin/" data-i18n="nav.admin">Admin Giriş</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="container">
+      <div class="hero-copy">
+        <div class="hero-badge">
+          <span class="dot" aria-hidden="true"></span>
+          <span data-i18n="hero.eyebrow">CANLI FUTBOL AKIŞI</span>
+        </div>
+        <h1>
+          <span data-i18n="hero.title1">Futbolun nabzı,</span>
+          <span class="grad" data-i18n="hero.title2">tek ekranda.</span>
+        </h1>
+        <p class="hero-sub" data-i18n="hero.sub">Transferler, gündem, takım haberleri ve sosyal medya akışı — hepsi gerçek zamanlı, tek uygulamada.</p>
+
+        <div class="hero-ctas">
+          <a href="https://apps.apple.com/us/app/pulse-sports/id6790100133" target="_blank" rel="noopener" aria-label="App Store'dan indir">
+            <img class="store-badge" src="assets/badge-appstore.svg" width="162" height="54" alt="App Store'dan indir">
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.gurbanov.xai" target="_blank" rel="noopener" aria-label="Google Play'den indir">
+            <img class="store-badge" src="assets/badge-googleplay.svg" width="182" height="54" alt="Google Play'den indir">
+          </a>
+        </div>
+
+        <div class="hero-meta">
+          <span data-i18n="hero.meta1">4+ yaş</span>
+          <span class="sep">·</span>
+          <span data-i18n="hero.meta2">Ücretsiz</span>
+          <span class="sep">·</span>
+          <span data-i18n="hero.meta3">3 dil</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="phone">
+          <img src="assets/screens/home.webp" width="300" height="650" alt="Pulse Sports uygulaması Sana Özel akış ekranı" loading="eager" fetchpriority="high">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" aria-label="Uygulama istatistikleri">
+    <div class="container">
+      <div class="stat"><div class="num">5+</div><div class="label" data-i18n="stats.teams">Takım</div></div>
+      <div class="stat"><div class="num">3</div><div class="label" data-i18n="stats.langs">Dil</div></div>
+      <div class="stat"><div class="num">7/24</div><div class="label" data-i18n="stats.live">Canlı Akış</div></div>
+      <div class="stat"><div class="num" data-i18n="stats.freeNum">0 ₺</div><div class="label" data-i18n="stats.free">Ücretsiz</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="features.eyebrow">ÖZELLİKLER</span>
+        <h2 data-i18n="features.title">Bir taraftarın ihtiyacı olan her şey</h2>
+        <p data-i18n="features.sub">Pulse Sports, futbolla ilgili her şeyi tek bir akışta, kişiselleştirilmiş şekilde önüne getirir.</p>
+      </div>
+
+      <div class="bento">
+        <div class="bento-card wide reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 1 16 0 8 8 0 0 1-16 0Z"/><path d="M12 8v4l2.5 2.5"/></svg></div>
+          <h3 data-i18n="features.card1.title">Sana Özel Akış</h3>
+          <p data-i18n="features.card1.desc">Takip ettiğin takımlara göre kişiselleşen, saniyesi saniyesine güncellenen futbol akışı.</p>
+        </div>
+        <div class="bento-card reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><path d="M3 17l4-6 4 3 5-8 5 5"/></svg></div>
+          <h3 data-i18n="features.card2.title">Gündem</h3>
+          <p data-i18n="features.card2.desc">Türkiye'de futbol dünyasının o an en çok konuşulan başlıkları ve trend etiketleri.</p>
+        </div>
+        <div class="bento-card reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+          <h3 data-i18n="features.card3.title">Takımlar</h3>
+          <p data-i18n="features.card3.desc">Galatasaray, Fenerbahçe, Beşiktaş, Trabzonspor ve Milli Takım için ayrı beslemeler.</p>
+        </div>
+        <div class="bento-card reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><path d="M4 4h10l6 6v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M14 4v6h6"/></svg></div>
+          <h3 data-i18n="features.card4.title">Transfer</h3>
+          <p data-i18n="features.card4.desc">Transfer haberleri, söylentiler ve resmî açıklamalar tek bir sekmede.</p>
+        </div>
+        <div class="bento-card reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4V3Z"/></svg></div>
+          <h3 data-i18n="features.card5.title">Kaydet</h3>
+          <p data-i18n="features.card5.desc">Beğendiğin gönderileri kaydet, internet olmadan da geri dön.</p>
+        </div>
+        <div class="bento-card full reveal">
+          <div class="bento-icon"><svg viewBox="0 0 24 24"><path d="M10 21a2 2 0 0 0 4 0"/><path d="M4 17h16l-1.8-2.7A5 5 0 0 1 17.4 11V9a5.4 5.4 0 0 0-10.8 0v2a5 5 0 0 1-.8 3.3L4 17Z"/></svg></div>
+          <div>
+            <h3 data-i18n="features.card6.title">Anlık Bildirimler</h3>
+            <p data-i18n="features.card6.desc">Önemli gelişme olduğunda anında haberdar ol — spam yok, sadece önemli olan.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREENS -->
+  <section class="gallery" id="screens">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="gallery.eyebrow">EKRANLAR</span>
+        <h2 data-i18n="gallery.title">Uygulamanın içinden</h2>
+        <p data-i18n="gallery.sub">Modern, hızlı ve koyu temalı arayüz — futbol gündemine odaklanman için tasarlandı.</p>
+      </div>
+    </div>
+    <div class="gallery-track" id="galleryTrack">
+      <div class="gallery-item"><div class="phone"><img src="assets/screens/home.webp" width="240" height="520" alt="Sana Özel akış ekranı" loading="lazy" decoding="async"></div></div>
+      <div class="gallery-item is-center"><div class="phone"><img src="assets/screens/trends.webp" width="240" height="520" alt="Gündem ekranı" loading="lazy" decoding="async"></div></div>
+      <div class="gallery-item"><div class="phone"><img src="assets/screens/explore.webp" width="240" height="520" alt="Keşfet ekranı" loading="lazy" decoding="async"></div></div>
+      <div class="gallery-item"><div class="phone"><img src="assets/screens/save.webp" width="240" height="520" alt="Kaydet ekranı" loading="lazy" decoding="async"></div></div>
+      <div class="gallery-item"><div class="phone"><img src="assets/screens/profile.webp" width="240" height="520" alt="Profil ekranı" loading="lazy" decoding="async"></div></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="how.eyebrow">NASIL ÇALIŞIR</span>
+        <h2 data-i18n="how.title">Üç adımda başla</h2>
+      </div>
+      <div class="how-steps">
+        <div class="how-step reveal">
+          <div class="how-num">1</div>
+          <h3 data-i18n="how.step1.title">İndir</h3>
+          <p data-i18n="how.step1.desc">App Store veya Google Play'den ücretsiz indir.</p>
+        </div>
+        <div class="how-step reveal">
+          <div class="how-num">2</div>
+          <h3 data-i18n="how.step2.title">Takımını seç</h3>
+          <p data-i18n="how.step2.desc">Favori takımlarını işaretle, akışın anında şekillensin.</p>
+        </div>
+        <div class="how-step reveal">
+          <div class="how-num">3</div>
+          <h3 data-i18n="how.step3.title">Takipte kal</h3>
+          <p data-i18n="how.step3.desc">Akış senin için çalışır — gündem, transfer, her şey.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="faq.eyebrow">SIKÇA SORULANLAR</span>
+        <h2 data-i18n="faq.title">Merak ettiklerin</h2>
+      </div>
+      <div class="faq-list reveal" id="faqList">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-1">
+            <span data-i18n="faq.q1">Pulse Sports ücretsiz mi?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-1" role="region">
+            <p data-i18n="faq.a1">Evet, uygulama tamamen ücretsiz. İçerikler reklam destekli sunulur.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-2">
+            <span data-i18n="faq.q2">Hangi cihazlarda çalışıyor?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-2" role="region">
+            <p data-i18n="faq.a2">iOS 15.6 ve üzeri iPhone'lar ile Android cihazlarda.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-3">
+            <span data-i18n="faq.q3">Hangi dilleri destekliyor?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-3" role="region">
+            <p data-i18n="faq.a3">Türkçe, İngilizce ve Rusça.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-4">
+            <span data-i18n="faq.q4">İçerikler nereden geliyor?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-4" role="region">
+            <p data-i18n="faq.a4">Futbol gündemine ait halka açık sosyal medya gönderileri ve haber akışları gerçek zamanlı derlenir.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-5">
+            <span data-i18n="faq.q5">Hesap açmam gerekiyor mu?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-5" role="region">
+            <p data-i18n="faq.a5">Hayır. Uygulamayı indirip doğrudan kullanmaya başlayabilirsin.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false" aria-controls="faq-a-6">
+            <span data-i18n="faq.q6">Verilerim nasıl kullanılıyor?</span>
+            <span class="plus" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a" id="faq-a-6" role="region">
+            <p><span data-i18n="faq.a6">Gizlilik politikamızda ayrıntılı açıklanmıştır:</span> <a href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener">Gizlilik Politikası</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD CTA -->
+  <section class="cta-band-wrap">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2 data-i18n="cta.title">Maçı kaçırma, gündemi kaçırma.</h2>
+        <p data-i18n="cta.sub">Pulse Sports'u ücretsiz indir, futbolun nabzını cebinde taşı.</p>
+        <div class="hero-ctas">
+          <a href="https://apps.apple.com/us/app/pulse-sports/id6790100133" target="_blank" rel="noopener" aria-label="App Store'dan indir">
+            <img class="store-badge" src="assets/badge-appstore.svg" width="162" height="54" alt="App Store'dan indir">
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.gurbanov.xai" target="_blank" rel="noopener" aria-label="Google Play'den indir">
+            <img class="store-badge" src="assets/badge-googleplay.svg" width="182" height="54" alt="Google Play'den indir">
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact" id="contact">
+    <div class="container">
+      <div class="contact-grid">
+        <div class="contact-info reveal">
+          <span class="eyebrow" data-i18n="contact.eyebrow">İLETİŞİM</span>
+          <h2 data-i18n="contact.title">Bize ulaşın</h2>
+          <p data-i18n="contact.sub">Soru, öneri, hata bildirimi veya iş birliği — hepsini okuyoruz. Genellikle 1–2 iş günü içinde dönüş yapıyoruz.</p>
+
+          <div class="contact-channel">
+            <div class="ico"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4V6Z"/><path d="M4 7l8 6 8-6"/></svg></div>
+            <div>
+              <div class="label" data-i18n="contact.email">E-posta</div>
+              <a class="value" id="contactEmailLink" href="#">—</a>
+            </div>
+          </div>
+          <div class="contact-channel">
+            <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s7-5.1 7-11.5A7 7 0 0 0 5 10.5C5 16.9 12 22 12 22Z"/><circle cx="12" cy="10.5" r="2.5"/></svg></div>
+            <div>
+              <div class="label" data-i18n="contact.privacy">Gizlilik Politikası</div>
+              <a class="value" href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener" data-i18n="contact.privacyLink">Politikayı görüntüle</a>
+            </div>
+          </div>
+          <div class="contact-channel">
+            <div class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M10 18h4"/></svg></div>
+            <div>
+              <div class="label" data-i18n="contact.support">Uygulama Desteği</div>
+              <a class="value" href="https://apps.apple.com/us/app/pulse-sports/id6790100133" target="_blank" rel="noopener" data-i18n="contact.supportLink">App Store sayfası</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <form class="contact-form" id="contactForm" novalidate>
+            <div class="form-field">
+              <label for="cf-name" data-i18n="form.name">Ad Soyad</label>
+              <input type="text" id="cf-name" name="name" required autocomplete="name">
+            </div>
+            <div class="form-field">
+              <label for="cf-email" data-i18n="form.email">E-posta</label>
+              <input type="email" id="cf-email" name="email" required autocomplete="email">
+            </div>
+            <div class="form-field">
+              <label for="cf-subject" data-i18n="form.subject">Konu</label>
+              <select id="cf-subject" name="subject">
+                <option data-i18n="form.subjectGeneral" value="Genel">Genel</option>
+                <option data-i18n="form.subjectBug" value="Hata Bildirimi">Hata Bildirimi</option>
+                <option data-i18n="form.subjectPartnership" value="İş Birliği">İş Birliği</option>
+                <option data-i18n="form.subjectOther" value="Diğer">Diğer</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="cf-message" data-i18n="form.message">Mesaj</label>
+              <textarea id="cf-message" name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="form-submit" data-i18n="form.submit">Gönder</button>
+          </form>
+          <div class="form-success" id="formSuccess">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <p data-i18n="form.success">Mesajın iletildi.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#top" class="nav-brand">
+          <img src="assets/nav-mark.png" width="28" height="28" alt="Pulse Sports logosu">
+          <span>Pulse Sports</span>
+        </a>
+        <p data-i18n="footer.tagline">Futbolun nabzı, tek ekranda.</p>
+        <div class="footer-badges">
+          <a href="https://apps.apple.com/us/app/pulse-sports/id6790100133" target="_blank" rel="noopener" aria-label="App Store'dan indir">
+            <img src="assets/badge-appstore.svg" width="120" height="38" alt="App Store'dan indir">
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.gurbanov.xai" target="_blank" rel="noopener" aria-label="Google Play'den indir">
+            <img src="assets/badge-googleplay.svg" width="135" height="38" alt="Google Play'den indir">
+          </a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.product">Ürün</h4>
+        <ul>
+          <li><a href="#features" data-i18n="nav.features">Özellikler</a></li>
+          <li><a href="#screens" data-i18n="nav.screens">Ekranlar</a></li>
+          <li><a href="#faq" data-i18n="nav.faq">SSS</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.company">Şirket</h4>
+        <ul>
+          <li><a href="#contact" data-i18n="nav.contact">İletişim</a></li>
+          <li><a href="/admin/" data-i18n="nav.admin">Admin</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4 data-i18n="footer.legal">Yasal</h4>
+        <ul>
+          <li><a href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener" data-i18n="contact.privacy">Gizlilik Politikası</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="footerYear">2026</span> Vectora Digital LLC. </span>
+      <span data-i18n="footer.rights">Tüm hakları saklıdır.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="main.js" defer></script>
+</body>
+</html>

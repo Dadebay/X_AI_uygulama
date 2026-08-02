@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 
 class AppNetworkImage extends StatelessWidget {
   final String? url;
   final double? width;
   final double? height;
   final BoxFit fit;
+  final Alignment alignment;
   final BorderRadius? borderRadius;
   final Widget? errorWidget;
   final Color? backgroundColor;
@@ -17,6 +17,7 @@ class AppNetworkImage extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.cover,
+    this.alignment = Alignment.center,
     this.borderRadius,
     this.errorWidget,
     this.backgroundColor,
@@ -44,7 +45,7 @@ class AppNetworkImage extends StatelessWidget {
         height: height,
         color: backgroundColor ?? const Color(0xFFF9F9F9),
         padding: const EdgeInsets.all(8),
-        child: Image.asset(resolvedUrl, fit: fit, errorBuilder: (_, __, ___) => _errorPlaceholder()),
+        child: Image.asset(resolvedUrl, fit: fit, alignment: alignment, errorBuilder: (_, __, ___) => _errorPlaceholder()),
       );
     }
     return CachedNetworkImage(
@@ -52,6 +53,7 @@ class AppNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      alignment: alignment,
       color: null,
       placeholder: (_, __) => _placeholder(),
       errorWidget: (_, __, ___) => errorWidget ?? _errorPlaceholder(),
@@ -61,7 +63,7 @@ class AppNetworkImage extends StatelessWidget {
                 height: height,
                 color: backgroundColor,
                 padding: const EdgeInsets.all(8),
-                child: Image(image: imageProvider, fit: fit),
+                child: Image(image: imageProvider, fit: fit, alignment: alignment),
               )
           : null,
     );
@@ -90,8 +92,8 @@ class AppNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       color: backgroundColor ?? const Color(0xFFF0F0F0),
-      child: Center(
-        child: HugeIcon(icon: HugeIcons.strokeRoundedImageNotFound01, color: Colors.grey, size: 32),
+      child: const Center(
+        child: Icon(Icons.image_not_supported_outlined, color: Colors.grey, size: 32),
       ),
     );
   }

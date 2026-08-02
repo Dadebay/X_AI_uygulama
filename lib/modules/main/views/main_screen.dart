@@ -25,12 +25,46 @@ class MainScreen extends StatelessWidget {
     final c = Tc.of(context);
     return Obx(() => Scaffold(
           backgroundColor: c.bg,
-          body: IndexedStack(
+          body: _LazyIndexedStack(
             index: ctrl.currentIndex.value,
             children: _screens,
           ),
           bottomNavigationBar: _PulseNavBar(ctrl: ctrl),
         ));
+  }
+}
+
+/// Normal IndexedStack tüm children'ı (görünmeyenler dahil) hemen build eder;
+/// bu da her sekmenin controller'ını (ve onInit'teki network isteklerini) uygulama
+/// açılır açılmaz tetikler. Bu widget her sekmeyi yalnızca ilk kez seçildiğinde
+/// build eder, sonrasında IndexedStack gibi state'ini korur.
+class _LazyIndexedStack extends StatefulWidget {
+  final int index;
+  final List<Widget> children;
+  const _LazyIndexedStack({required this.index, required this.children});
+
+  @override
+  State<_LazyIndexedStack> createState() => _LazyIndexedStackState();
+}
+
+class _LazyIndexedStackState extends State<_LazyIndexedStack> {
+  late final Set<int> _built = {widget.index};
+
+  @override
+  void didUpdateWidget(covariant _LazyIndexedStack oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _built.add(widget.index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: widget.index,
+      children: [
+        for (var i = 0; i < widget.children.length; i++)
+          _built.contains(i) ? widget.children[i] : const SizedBox.shrink(),
+      ],
+    );
   }
 }
 

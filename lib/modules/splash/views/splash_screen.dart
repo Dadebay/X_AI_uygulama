@@ -1,8 +1,9 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show InternetAddress, Platform;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -50,6 +51,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Future<void> _checkStatus() async {
     await Future.delayed(const Duration(milliseconds: 2800));
     if (!mounted) return;
+
+    if (kIsWeb) {
+      Get.offAll(() => const MainScreen(), binding: MainBinding());
+      return;
+    }
 
     bool hasInternet = false;
     try {

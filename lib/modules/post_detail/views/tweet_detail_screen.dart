@@ -7,6 +7,8 @@ import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/widgets/app_network_image.dart';
+import 'package:atlas/widgets/full_screen_image_viewer.dart';
+import 'package:atlas/widgets/pulse/linkified_text.dart';
 import 'package:atlas/modules/auth/controllers/auth_controller.dart';
 import 'package:atlas/modules/auth/views/login_screen.dart';
 import 'package:atlas/modules/saved/controllers/saved_controller.dart';
@@ -18,15 +20,26 @@ class TweetDetailScreen extends StatelessWidget {
 
   void _openOnX() {
     if (tweet.tweetUrl == null) return;
-    Get.to(
-      () => AdOverlayScreen(targetUrl: tweet.tweetUrl!),
-      transition: Transition.fadeIn,
-    );
+    AdOverlayScreen.open(tweet.tweetUrl!);
   }
 
   void _share() {
     final url = tweet.tweetUrl ?? 'https://x.com/${tweet.handle}';
     Share.share('${tweet.content}\n\n— @${tweet.handle}\n$url');
+  }
+
+  void _openMediaViewer(int index) {
+    Get.to(
+      () => FullScreenImageViewer(
+        images: tweet.media.map((m) => m.url).toList(),
+        isVideo: tweet.media.map((m) => m.isVideo).toList(),
+        initialIndex: index,
+        heroTagPrefix: 'tweet_detail_${tweet.id}',
+        onWatchVideo: (_) => _openOnX(),
+      ),
+      transition: Transition.fadeIn,
+      duration: const Duration(milliseconds: 250),
+    );
   }
 
   String _cleanContent(String text) {
@@ -143,7 +156,8 @@ class TweetDetailScreen extends StatelessWidget {
 
               // ── İçerik ─────────────────────────────────────────
               const SizedBox(height: 14),
-              Text(_cleanContent(tweet.content),
+              LinkifiedText(
+                  text: _cleanContent(tweet.content),
                   style: TextStyle(
                       color: c.textPrimary,
                       fontSize: 16,
@@ -153,7 +167,7 @@ class TweetDetailScreen extends StatelessWidget {
               // ── Medya ──────────────────────────────────────────
               if (tweet.media.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                _DetailMedia(media: tweet.media, onVideoTap: _openOnX),
+                _DetailMedia(media: tweet.media, onTileTap: _openMediaViewer),
               ],
 
               // ── Zaman ──────────────────────────────────────────
@@ -315,39 +329,45 @@ class _Avatar extends StatelessWidget {
 
 class _DetailMedia extends StatelessWidget {
   final List<TweetMedia> media;
-  final VoidCallback onVideoTap;
-  const _DetailMedia({required this.media, required this.onVideoTap});
+  final ValueChanged<int> onTileTap;
+  const _DetailMedia({required this.media, required this.onTileTap});
 
   @override
   Widget build(BuildContext context) {
     final c = Tc.of(context);
     final items = media.take(4).toList();
+    const containerRatio = 16 / 10;
+    final rows = (items.length / 2).ceil();
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
       child: AspectRatio(
-        aspectRatio: 16 / 10,
+        aspectRatio: containerRatio,
         child: items.length == 1
-            ? _tile(c, items.first)
+            ? _tile(c, items.first, 0)
             : GridView.count(
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
-                children: items.map((m) => _tile(c, m)).toList(),
+                childAspectRatio: containerRatio * rows / 2,
+                children: [
+                  for (var i = 0; i < items.length; i++) _tile(c, items[i], i),
+                ],
               ),
       ),
     );
   }
 
-  Widget _tile(dynamic c, TweetMedia item) {
+  Widget _tile(dynamic c, TweetMedia item, int index) {
     return GestureDetector(
-      onTap: item.isVideo ? onVideoTap : null,
+      onTap: () => onTileTap(index),
       child: Stack(
         fit: StackFit.expand,
         children: [
           AppNetworkImage(
             url: item.url,
             fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
             backgroundColor: c.surface,
           ),
           if (item.isVideo)

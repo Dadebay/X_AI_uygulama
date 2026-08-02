@@ -5,6 +5,13 @@ class TweetMedia {
   final bool isVideo;
 
   const TweetMedia({required this.url, this.isVideo = false});
+
+  Map<String, dynamic> toJson() => {'url': url, 'isVideo': isVideo};
+
+  factory TweetMedia.fromJson(Map<String, dynamic> json) => TweetMedia(
+        url: json['url']?.toString() ?? '',
+        isVideo: json['isVideo'] == true,
+      );
 }
 
 class TweetModel {
@@ -39,6 +46,43 @@ class TweetModel {
     this.tags = const [],
     this.media = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'username': username,
+        'handle': handle,
+        'avatarUrl': avatarUrl,
+        'content': content,
+        'timeAgo': timeAgo,
+        'replies': replies,
+        'retweets': retweets,
+        'likes': likes,
+        'views': views,
+        'tweetUrl': tweetUrl,
+        'isVerified': isVerified,
+        'tags': tags,
+        'media': media.map((m) => m.toJson()).toList(),
+      };
+
+  factory TweetModel.fromJson(Map<String, dynamic> json) => TweetModel(
+        id: json['id']?.toString() ?? '',
+        username: json['username']?.toString() ?? '',
+        handle: json['handle']?.toString() ?? '',
+        avatarUrl: json['avatarUrl']?.toString() ?? '',
+        content: json['content']?.toString() ?? '',
+        timeAgo: json['timeAgo']?.toString() ?? '',
+        replies: (json['replies'] as num?)?.toInt() ?? 0,
+        retweets: (json['retweets'] as num?)?.toInt() ?? 0,
+        likes: (json['likes'] as num?)?.toInt() ?? 0,
+        views: (json['views'] as num?)?.toInt() ?? 0,
+        tweetUrl: json['tweetUrl']?.toString(),
+        isVerified: json['isVerified'] == true,
+        tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+        media: (json['media'] as List<dynamic>?)
+                ?.map((e) => TweetMedia.fromJson(Map<String, dynamic>.from(e as Map)))
+                .toList() ??
+            const [],
+      );
 }
 
 class TrendTopic {

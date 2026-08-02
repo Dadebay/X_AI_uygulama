@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -6,12 +7,16 @@ class FullScreenImageViewer extends StatefulWidget {
   final List<String> images;
   final int initialIndex;
   final String heroTagPrefix;
+  final List<bool> isVideo;
+  final ValueChanged<int>? onWatchVideo;
 
   const FullScreenImageViewer({
     super.key,
     required this.images,
     this.initialIndex = 0,
     required this.heroTagPrefix,
+    this.isVideo = const [],
+    this.onWatchVideo,
   });
 
   @override
@@ -38,6 +43,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
     _transformationController.dispose();
     super.dispose();
   }
+
+  bool _isVideoAt(int index) => index < widget.isVideo.length && widget.isVideo[index];
 
   void _handleDoubleTap() {
     setState(() {
@@ -115,18 +122,15 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                               imageUrl,
                               fit: BoxFit.contain,
                             )
-                          : Image.network(
-                              imageUrl,
+                          : CachedNetworkImage(
+                              imageUrl: imageUrl,
                               fit: BoxFit.contain,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null,
-                                    color: const Color(0xff22B241),
-                                  ),
-                                );
-                              },
+                              placeholder: (_, __) => const Center(
+                                child: CircularProgressIndicator(color: Color(0xff22B241)),
+                              ),
+                              errorWidget: (_, __, ___) => const Center(
+                                child: Icon(Icons.broken_image_rounded, color: Colors.white38, size: 48),
+                              ),
                             ),
                     ),
                   ),
@@ -155,8 +159,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   icon: HugeIcons.strokeRoundedDownload01,
                   onTap: () {
                     Get.snackbar(
-                      'Success',
-                      'Image saved to gallery'.tr,
+                      'success'.tr,
+                      'image_saved_gallery'.tr,
                       snackPosition: SnackPosition.BOTTOM,
                       backgroundColor: Colors.green,
                       colorText: Colors.white,
@@ -170,8 +174,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   icon: HugeIcons.strokeRoundedShare01,
                   onTap: () {
                     Get.snackbar(
-                      'Share',
-                      'Sharing current image...'.tr,
+                      'image_share_title'.tr,
+                      'image_sharing_desc'.tr,
                       snackPosition: SnackPosition.BOTTOM,
                       backgroundColor: const Color(0xff22B241),
                       colorText: Colors.white,
@@ -183,6 +187,37 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
               ],
             ),
           ),
+
+          // Video izleme butonu
+          if (_isVideoAt(_currentIndex) && !_isZoomed && widget.onWatchVideo != null)
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + (widget.images.length > 1 ? 56 : 20),
+              left: 0,
+              right: 0,
+              child: Center(
+                child: GestureDetector(
+                  onTap: () => widget.onWatchVideo!(_currentIndex),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xff22B241),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+                        SizedBox(width: 6),
+                        Text(
+                          "X'te İzle",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
           // Page Indicator
           if (widget.images.length > 1 && !_isZoomed)

@@ -12,7 +12,6 @@ import 'package:atlas/widgets/common/settings_row.dart';
 import 'package:atlas/widgets/profile/settings_sheets.dart';
 import 'package:atlas/modules/profile/views/about_page.dart';
 import 'package:atlas/modules/notifications/views/notifications_screen.dart';
-import 'package:atlas/modules/admin/views/admin_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -88,13 +87,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SettingsRow(icon: HugeIcons.strokeRoundedInformationCircle, label: 'about_app'.tr, onTap: () => Get.to(() => const AboutPage(), transition: Transition.cupertino)),
             SettingsRow(icon: HugeIcons.strokeRoundedShield01, label: 'privacy_policy'.tr, onTap: () => Get.to(() => const PrivacyPage(), transition: Transition.cupertino)),
             SettingsRow(icon: HugeIcons.strokeRoundedNote01, label: 'terms_of_use'.tr, onTap: () => Get.to(() => const TermsPage(), transition: Transition.cupertino)),
-            const SizedBox(height: 8),
-            SectionHeader('Yönetim'),
-            SettingsRow(
-              icon: HugeIcons.strokeRoundedSettings01,
-              label: 'Admin Paneli',
-              onTap: () => Get.to(() => const AdminScreen(), transition: Transition.cupertino),
-            ),
           ],
         ),
       ),
@@ -184,31 +176,38 @@ class _ProfileCard extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 8),
-                // Google badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: c.surfaceElevated,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: c.divider, width: 0.5),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.g_mobiledata_rounded, size: 14, color: c.textMuted),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Google',
-                        style: TextStyle(
+                // Giriş sağlayıcı rozeti (Google/Apple) — gerçek providerId'ye göre
+                Builder(builder: (context) {
+                  final isApple = auth.providerId == 'apple.com';
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: c.surfaceElevated,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: c.divider, width: 0.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isApple ? Icons.apple_rounded : Icons.g_mobiledata_rounded,
+                          size: 14,
                           color: c.textMuted,
-                          fontSize: 11,
-                          fontFamily: 'Gilroy',
-                          fontWeight: FontWeight.w600,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isApple ? 'Apple' : 'Google',
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 11,
+                            fontFamily: 'Gilroy',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
               ],
             ),
           ),
