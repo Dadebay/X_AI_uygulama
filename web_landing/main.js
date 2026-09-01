@@ -2,7 +2,7 @@
   'use strict';
 
   // Tek yerden tanımlı iletişim e-postası. Değiştirmek için sadece burayı düzenle.
-  var CONTACT_EMAIL = 'REPLACE_WITH_EMAIL@example.com';
+  var CONTACT_EMAIL = 'onesocialtest960@gmail.com';
 
   var TR = {
     'nav.features': 'Özellikler', 'nav.screens': 'Ekranlar', 'nav.faq': 'SSS',
@@ -129,6 +129,27 @@
     });
   }
 
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('.theme-switch button').forEach(function (btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-theme-btn') === theme);
+    });
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', theme === 'light' ? '#FFFFFF' : '#0A0A0A');
+    try { localStorage.setItem('pulse_theme', theme); } catch (e) {}
+  }
+
+  function initTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem('pulse_theme'); } catch (e) {}
+    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    var initial = saved || (prefersLight ? 'light' : 'dark');
+    applyTheme(initial);
+    document.querySelectorAll('.theme-switch button').forEach(function (btn) {
+      btn.addEventListener('click', function () { applyTheme(btn.getAttribute('data-theme-btn')); });
+    });
+  }
+
   function initNavbarScroll() {
     var nav = document.getElementById('navbar');
     function onScroll() { nav.classList.toggle('scrolled', window.scrollY > 20); }
@@ -139,6 +160,7 @@
   function initMobileNav() {
     var toggle = document.getElementById('navToggle');
     var mobile = document.getElementById('navMobile');
+    if (!toggle || !mobile) return;
     toggle.addEventListener('click', function () {
       var open = mobile.classList.toggle('open');
       toggle.setAttribute('aria-expanded', String(open));
@@ -245,6 +267,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    initTheme();
     initLang();
     initNavbarScroll();
     initMobileNav();

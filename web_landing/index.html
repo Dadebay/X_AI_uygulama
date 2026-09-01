@@ -7,6 +7,15 @@
 <meta name="description" content="Transferler, gündem, takım haberleri ve sosyal medya akışı tek uygulamada. Pulse Sports'u iOS ve Android için ücretsiz indir.">
 <link rel="canonical" href="https://xaiuygulama.web.app/">
 <meta name="theme-color" content="#0A0A0A">
+<script>
+(function () {
+  try {
+    var saved = localStorage.getItem('pulse_theme');
+    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    document.documentElement.setAttribute('data-theme', saved || (prefersLight ? 'light' : 'dark'));
+  } catch (e) {}
+})();
+</script>
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Pulse Sports — Futbolun nabzı, tek ekranda">
@@ -60,11 +69,18 @@
     </nav>
 
     <div class="nav-right">
+      <div class="theme-switch" role="group" aria-label="Tema seçimi">
+        <button type="button" data-theme-btn="light" aria-label="Açık tema">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        </button>
+        <button type="button" data-theme-btn="dark" aria-label="Koyu tema">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+        </button>
+      </div>
       <div class="lang-switch" role="group" aria-label="Dil seçimi">
         <button type="button" data-lang="tr" class="active">TR</button>
         <button type="button" data-lang="en">EN</button>
       </div>
-      <a href="/admin/" class="btn btn-ghost" data-i18n="nav.admin">Admin Giriş</a>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Menüyü aç" aria-expanded="false" aria-controls="navMobile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
@@ -76,7 +92,6 @@
     <a href="#screens" data-i18n="nav.screens">Ekranlar</a>
     <a href="#faq" data-i18n="nav.faq">SSS</a>
     <a href="#contact" data-i18n="nav.contact">İletişim</a>
-    <a href="/admin/" data-i18n="nav.admin">Admin Giriş</a>
   </div>
 </header>
 
@@ -284,7 +299,7 @@
             <span class="plus" aria-hidden="true"></span>
           </button>
           <div class="faq-a" id="faq-a-6" role="region">
-            <p><span data-i18n="faq.a6">Gizlilik politikamızda ayrıntılı açıklanmıştır:</span> <a href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener">Gizlilik Politikası</a></p>
+            <p><span data-i18n="faq.a6">Gizlilik politikamızda ayrıntılı açıklanmıştır:</span> <a href="/privacy">Gizlilik Politikası</a></p>
           </div>
         </div>
       </div>
@@ -329,7 +344,7 @@
             <div class="ico"><svg viewBox="0 0 24 24"><path d="M12 22s7-5.1 7-11.5A7 7 0 0 0 5 10.5C5 16.9 12 22 12 22Z"/><circle cx="12" cy="10.5" r="2.5"/></svg></div>
             <div>
               <div class="label" data-i18n="contact.privacy">Gizlilik Politikası</div>
-              <a class="value" href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener" data-i18n="contact.privacyLink">Politikayı görüntüle</a>
+              <a class="value" href="/privacy" data-i18n="contact.privacyLink">Politikayı görüntüle</a>
             </div>
           </div>
           <div class="contact-channel">
@@ -407,13 +422,12 @@
         <h4 data-i18n="footer.company">Şirket</h4>
         <ul>
           <li><a href="#contact" data-i18n="nav.contact">İletişim</a></li>
-          <li><a href="/admin/" data-i18n="nav.admin">Admin</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h4 data-i18n="footer.legal">Yasal</h4>
         <ul>
-          <li><a href="https://www.freeprivacypolicy.com/live/52b95741-507c-42c1-81e9-3fa760fca7f6" target="_blank" rel="noopener" data-i18n="contact.privacy">Gizlilik Politikası</a></li>
+          <li><a href="/privacy" data-i18n="contact.privacy">Gizlilik Politikası</a></li>
         </ul>
       </div>
     </div>

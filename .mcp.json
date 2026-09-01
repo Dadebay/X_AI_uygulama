@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "xquik": {
+      "type": "http",
+      "url": "https://xquik.com/mcp",
+      "headers": {
+        "x-api-key": "xq_49ce52dbbcc88c3eecef976447239f04c1d1783db3282d9db69d4221cd87ac92"
+      }
+    }
+  }
+}

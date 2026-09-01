@@ -9,7 +9,15 @@ import 'package:get/get.dart';
 /// tema, dil, reklam vb.) hiçbir bağımlılığını import etmez — bu sayede
 /// dart2js tree-shaking mobil kod ağacını ve onun asset'lerini (hugeicons
 /// fontu dahil) admin bundle'ından tamamen eleyebilir.
-Future<void> main() async {
+///
+/// Yayına çıkan admin build'i `deploy_web.sh` içinde bu dosya hedef alınarak
+/// (`-t lib/main_admin.dart`) derlenir.
+Future<void> main() => bootstrapAdminPanel();
+
+/// Admin panelini başlatır. `lib/main.dart` de web'de (kIsWeb) buraya
+/// yönlendirir; böylece hedef belirtmeden `flutter run -d chrome` demek
+/// admin panelini açar, mobil cihazda ise uygulamanın kendisi açılır.
+Future<void> bootstrapAdminPanel() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

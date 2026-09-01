@@ -6,6 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
 import 'package:atlas/widgets/pulse/feed_states.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 
 class DigestScreen extends StatefulWidget {
   const DigestScreen({super.key});
@@ -17,6 +18,12 @@ class DigestScreen extends StatefulWidget {
 class _DigestScreenState extends State<DigestScreen> {
   int _selectedDay = 1;
   List<String> get _days => ['yesterday'.tr, 'today'.tr, '8 May', '7 May', '6 May'];
+
+  @override
+  void initState() {
+    super.initState();
+    AnalyticsService.logScreenView('digest', screenClass: 'DigestScreen');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +110,7 @@ class _DigestScreenState extends State<DigestScreen> {
                   child: Text('top_tweets'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 16, fontFamily: 'Gilroy')),
                 ),
                 ...MockData.homeFeed.take(3).map((t) => TweetCard(
+                      tweetId: t.id,
                       username: t.username,
                       handle: t.handle,
                       content: t.content,

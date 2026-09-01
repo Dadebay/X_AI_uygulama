@@ -89,19 +89,31 @@ class FirestoreService {
     _patchSettingsCache({'priorityAccounts': accounts});
   }
 
-  /// Öncelikli hesaplar dışındaki tweetlerin gösterilmesi için gereken minimum
-  /// görüntülenme/beğeni sayısı
-  Future<int> getMinEngagementThreshold() async {
+  /// Öncelikli hesaplar dışındaki tweetlerin Xquik'ten çekilebilmesi için
+  /// gereken minimum etkileşim eşikleri. Bunlar Xquik'in `/x/tweets/search`
+  /// endpoint'inin gerçek query parametreleridir (minFaves/minRetweets/
+  /// minReplies/minQuotes) — filtre API seviyesinde uygulanır.
+  Future<EngagementThresholds> getEngagementThresholds() async {
     final settings = await getSettings();
-    return (settings['minEngagementThreshold'] as num?)?.toInt() ?? 500;
+    return EngagementThresholds(
+      minFaves: (settings['minFaves'] as num?)?.toInt() ?? 500,
+      minRetweets: (settings['minRetweets'] as num?)?.toInt() ?? 0,
+      minReplies: (settings['minReplies'] as num?)?.toInt() ?? 0,
+      minQuotes: (settings['minQuotes'] as num?)?.toInt() ?? 0,
+      minViews: (settings['minViews'] as num?)?.toInt() ?? 0,
+    );
   }
 
-  Future<void> setMinEngagementThreshold(int value) async {
-    await _db.collection('config').doc('settings').set(
-      {'minEngagementThreshold': value},
-      SetOptions(merge: true),
-    );
-    _patchSettingsCache({'minEngagementThreshold': value});
+  Future<void> setEngagementThresholds(EngagementThresholds thresholds) async {
+    final data = {
+      'minFaves': thresholds.minFaves,
+      'minRetweets': thresholds.minRetweets,
+      'minReplies': thresholds.minReplies,
+      'minQuotes': thresholds.minQuotes,
+      'minViews': thresholds.minViews,
+    };
+    await _db.collection('config').doc('settings').set(data, SetOptions(merge: true));
+    _patchSettingsCache(data);
   }
 
   /// Reklamların uygulama genelinde açık/kapalı olduğunu kontrol eden bayrak
@@ -161,6 +173,94 @@ class FirestoreService {
       return null;
     }
   }
+
+  // ─── Premium fiyatlandırma (prices/premium) ──────────────────────────────
+  // Admin panelden yönetilir; uygulama tarafında PremiumScreen bu değerleri
+  // gösterir. Ayrı bir koleksiyonda tutuluyor çünkü config/settings PIN'le
+  // korunan admin ayarları içeriyor, fiyatlar ise doğrudan uygulamadan da
+  // (watchPremiumPricing ile) canlı okunuyor.
+  PremiumPricing _parsePremiumPricing(Map<String, dynamic> d) => PremiumPricing(
+        monthlyPrice: (d['monthlyPrice'] as num?)?.toDouble() ?? 49.99,
+        yearlyPrice: (d['yearlyPrice'] as num?)?.toDouble() ?? 399.99,
+        yearlyDiscountLabel: d['yearlyDiscountLabel']?.toString() ?? '%33 indirim!',
+        currency: d['currency']?.toString() ?? '₺',
+      );
+
+  Future<PremiumPricing> getPremiumPricing() async {
+    try {
+      final snap = await _db.collection('prices').doc('premium').get();
+      return _parsePremiumPricing(snap.data() ?? {});
+    } catch (_) {
+      return _parsePremiumPricing(const {});
+    }
+  }
+
+  Future<void> setPremiumPricing(PremiumPricing pricing) async {
+    await _db.collection('prices').doc('premium').set({
+      'monthlyPrice': pricing.monthlyPrice,
+      'yearlyPrice': pricing.yearlyPrice,
+      'yearlyDiscountLabel': pricing.yearlyDiscountLabel,
+      'currency': pricing.currency,
+    }, SetOptions(merge: true));
+  }
+
+  /// Admin panelden fiyat değiştiğinde açık uygulamalara anında yansıması için canlı akış
+  Stream<PremiumPricing> watchPremiumPricing() {
+    return _db.collection('prices').doc('premium').snapshots().map(
+          (snap) => _parsePremiumPricing(snap.data() ?? {}),
+        );
+  }
+
+  // ─── Kullanıcı premium durumu ────────────────────────────────────────────
+  Future<void> setUserPremium(String uid, bool isPremium, {String? plan, DateTime? until}) async {
+    final data = <String, dynamic>{'isPremium': isPremium};
+    if (isPremium) {
+      data['premiumSince'] = FieldValue.serverTimestamp();
+      if (plan != null) data['premiumPlan'] = plan;
+      if (until != null) data['premiumUntil'] = Timestamp.fromDate(until);
+    }
+    await _db.collection('users').doc(uid).set(data, SetOptions(merge: true));
+  }
+
+  /// Abonelik süresi dolduğunda premium'u geri alır — plan/bitiş alanlarını da
+  /// temizler ki ekranda eski plandan kalma bilgi görünmesin.
+  Future<void> revokeUserPremium(String uid) async {
+    await _db.collection('users').doc(uid).set({
+      'isPremium': false,
+      'premiumPlan': FieldValue.delete(),
+      'premiumUntil': FieldValue.delete(),
+    }, SetOptions(merge: true));
+  }
+
+  /// Kullanıcının premium durumunu canlı izler — satın alma/admin tarafından
+  /// bedava verme işlemi anında uygulamaya yansır.
+  Stream<bool> watchUserPremium(String uid) {
+    return _db.collection('users').doc(uid).snapshots().map(
+          (snap) => snap.data()?['isPremium'] as bool? ?? false,
+        );
+  }
+
+  /// Premium ekranında hangi planın alındığını ve ne zaman biteceğini
+  /// göstermek için plan + bitiş tarihini de içeren canlı akış.
+  Stream<PremiumStatus> watchPremiumStatus(String uid) {
+    return _db.collection('users').doc(uid).snapshots().map((snap) {
+      final d = snap.data();
+      final until = d?['premiumUntil'];
+      return PremiumStatus(
+        isPremium: d?['isPremium'] as bool? ?? false,
+        plan: d?['premiumPlan'] as String?,
+        until: until is Timestamp ? until.toDate() : null,
+      );
+    });
+  }
+}
+
+class PremiumStatus {
+  final bool isPremium;
+  final String? plan;
+  final DateTime? until;
+
+  const PremiumStatus({required this.isPremium, this.plan, this.until});
 }
 
 class UsersPage {
@@ -169,4 +269,39 @@ class UsersPage {
   final bool hasMore;
 
   UsersPage({required this.users, required this.lastDoc, required this.hasMore});
+}
+
+/// `prices/premium` dokümanındaki Premium abonelik fiyatlandırması.
+class PremiumPricing {
+  final double monthlyPrice;
+  final double yearlyPrice;
+  final String yearlyDiscountLabel;
+  final String currency;
+
+  const PremiumPricing({
+    required this.monthlyPrice,
+    required this.yearlyPrice,
+    required this.yearlyDiscountLabel,
+    required this.currency,
+  });
+
+  String get formattedMonthly => '$currency${monthlyPrice.toStringAsFixed(2).replaceAll('.', ',')}';
+  String get formattedYearly => '$currency${yearlyPrice.toStringAsFixed(2).replaceAll('.', ',')}';
+}
+
+/// Xquik `/x/tweets/search` API'sinin gerçek etkileşim filtresi parametreleri.
+class EngagementThresholds {
+  final int minFaves;
+  final int minRetweets;
+  final int minReplies;
+  final int minQuotes;
+  final int minViews;
+
+  const EngagementThresholds({
+    required this.minFaves,
+    required this.minRetweets,
+    required this.minReplies,
+    required this.minQuotes,
+    required this.minViews,
+  });
 }

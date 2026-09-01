@@ -1,6 +1,6 @@
 import 'package:atlas/core/api/xquik_service.dart';
 import 'package:atlas/core/services/firestore_service.dart';
-import 'package:atlas/core/utils/engagement_filter.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';
@@ -28,9 +28,13 @@ class ExploreController extends GetxController {
 
   String _lastQuery = '';
 
-  // Admin panelden yönetilen öncelikli hesaplar ve minimum etkileşim eşiği
-  List<String> _priorityAccounts = [];
-  int _minEngagementThreshold = 500;
+  // Admin panelden yönetilen etkileşim eşikleri — Xquik'in `/x/tweets/search`
+  // API'sinin gerçek query parametreleri, sonuçlar API'den zaten filtreli gelir.
+  int _minFaves = 500;
+  int _minRetweets = 0;
+  int _minReplies = 0;
+  int _minQuotes = 0;
+  int _minViews = 0;
 
   @override
   void onInit() {
@@ -41,12 +45,12 @@ class ExploreController extends GetxController {
 
   Future<void> _loadEngagementSettings() async {
     try {
-      final results = await Future.wait([
-        _firestore.getPriorityAccounts(),
-        _firestore.getMinEngagementThreshold(),
-      ]);
-      _priorityAccounts = results[0] as List<String>;
-      _minEngagementThreshold = results[1] as int;
+      final t = await _firestore.getEngagementThresholds();
+      _minFaves = t.minFaves;
+      _minRetweets = t.minRetweets;
+      _minReplies = t.minReplies;
+      _minQuotes = t.minQuotes;
+      _minViews = t.minViews;
     } catch (e) {
       if (kDebugMode) print('[ExploreController] etkileşim ayarları yüklenemedi: $e');
     }
@@ -70,28 +74,13 @@ class ExploreController extends GetxController {
   int _score(TweetModel t) =>
       t.views > 0 ? t.views : (t.likes * 100 + t.retweets * 200);
 
-  /// Bir sayfayı etkileşime göre sıralar. Eşiği geçenler önce gelir; sayı
-  /// [_minPopularCount]'un altında kalırsa (ör. az tweet eşiği geçiyorsa)
-  /// liste görsel olarak boş/yetersiz kalmasın diye ham sonuçtan en yüksek
-  /// etkileşimli tweetlerle tamamlanır.
-  static const int _minPopularCount = 10;
+  /// Bir sayfayı etkileşime göre azalan sırada dizer. Filtreleme artık
+  /// Xquik API seviyesinde (minFaves/minRetweets/minReplies/minQuotes)
+  /// yapıldığı için burada sadece sıralama kalır.
   List<TweetModel> _rankPopularPage(List<TweetModel> raw) {
-    final filtered = filterByEngagement(
-      raw,
-      priorityAccounts: _priorityAccounts,
-      minEngagementThreshold: _minEngagementThreshold,
-    );
-    if (filtered.length < _minPopularCount) {
-      final seen = filtered.map((t) => t.id).toSet();
-      final rest = raw.where((t) => seen.add(t.id)).toList()
-        ..sort((a, b) => _score(b).compareTo(_score(a)));
-      for (final t in rest) {
-        if (filtered.length >= _minPopularCount) break;
-        filtered.add(t);
-      }
-    }
-    filtered.sort((a, b) => _score(b).compareTo(_score(a)));
-    return filtered;
+    final sorted = List<TweetModel>.from(raw)
+      ..sort((a, b) => _score(b).compareTo(_score(a)));
+    return sorted;
   }
 
   /// İlk sayfa: en az 20 popüler tweet çek, sonsuz kaydırma için imleci sıfırla.
@@ -101,7 +90,15 @@ class ExploreController extends GetxController {
     _popularCursor = null;
     hasMorePopular.value = true;
     try {
-      final res = await _xquik.searchTweetsPaged(customQuery: _popularQuery, limit: 20);
+      final res = await _xquik.searchTweetsPaged(
+        customQuery: _popularQuery,
+        limit: 20,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
+      );
       popularTweets.assignAll(_rankPopularPage(res.tweets));
       _popularCursor = res.cursor;
       hasMorePopular.value = res.cursor != null && res.tweets.isNotEmpty;
@@ -126,6 +123,11 @@ class ExploreController extends GetxController {
         customQuery: _popularQuery,
         limit: 20,
         cursor: _popularCursor,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
       );
       // Tekrar eden tweetleri ele (aynı id ikinci kez eklenmesin)
       final existing = popularTweets.map((t) => t.id).toSet();
@@ -150,11 +152,17 @@ class ExploreController extends GetxController {
       return;
     }
 
+    AnalyticsService.logSearch(q);
     isLoadingSearch.value = true;
     try {
       final tweets = await _xquik.searchTweets(
         customQuery: '$q lang:tr',
         limit: 20,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
       );
       searchResults.assignAll(tweets);
     } catch (_) {

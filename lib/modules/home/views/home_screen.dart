@@ -4,6 +4,7 @@ import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:atlas/modules/home/controllers/home_controller.dart';
+import 'package:atlas/modules/auth/controllers/auth_controller.dart';
 import 'package:atlas/modules/notifications/views/notifications_screen.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
 import 'tabs/for_you_tab.dart';
@@ -142,7 +143,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               )
             : Row(
                 children: [
-                  const Icon(HugeIcons.strokeRoundedPulse01, color: AppColors.primary, size: 28),
+                  Obx(() {
+                    final isPremium = Get.find<AuthController>().isPremium.value;
+                    return Icon(
+                      HugeIcons.strokeRoundedPulse01,
+                      color: isPremium ? AppColors.yellow : AppColors.primary,
+                      size: 28,
+                    );
+                  }),
                   const SizedBox(width: 8),
                   Text('Pulse', style: TextStyle(color: c.textPrimary, fontSize: 22, fontWeight: FontWeight.w900, fontFamily: 'Gilroy')),
                 ],
@@ -167,28 +175,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TabBar(
-                controller: _tabController,
-                isScrollable: false,
-                dividerColor: Colors.transparent,
-                indicatorColor: AppColors.primary,
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.label,
-                indicator: const UnderlineTabIndicator(
-                  borderSide: BorderSide(color: AppColors.primary, width: 3),
-                  insets: EdgeInsets.symmetric(horizontal: 6),
-                ),
-                labelColor: AppColors.primary,
-                unselectedLabelColor: c.textSecondary,
-                labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, fontFamily: 'Gilroy'),
-                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'Gilroy'),
-                tabs: [
-                  Tab(text: 'for_you'.tr),
-                  Tab(text: 'trending'.tr),
-                  Tab(text: 'teams'.tr),
-                  Tab(text: 'transfer'.tr),
-                ],
-              ),
+              Obx(() {
+                final accent = Get.find<AuthController>().isPremium.value ? AppColors.yellow : AppColors.primary;
+                return TabBar(
+                  controller: _tabController,
+                  isScrollable: false,
+                  dividerColor: Colors.transparent,
+                  indicatorColor: accent,
+                  indicatorWeight: 3,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  indicator: UnderlineTabIndicator(
+                    borderSide: BorderSide(color: accent, width: 3),
+                    insets: const EdgeInsets.symmetric(horizontal: 6),
+                  ),
+                  labelColor: accent,
+                  unselectedLabelColor: c.textSecondary,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, fontFamily: 'Gilroy'),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'Gilroy'),
+                  tabs: [
+                    Tab(text: 'for_you'.tr),
+                    Tab(text: 'trending'.tr),
+                    Tab(text: 'teams'.tr),
+                    Tab(text: 'transfer'.tr),
+                  ],
+                );
+              }),
               Divider(color: c.divider, height: 1),
             ],
           ),

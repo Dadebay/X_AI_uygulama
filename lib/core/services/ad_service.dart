@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:atlas/core/services/ads_config_controller.dart';
+import 'package:atlas/modules/auth/controllers/auth_controller.dart';
 
 /// Central place for AdMob ad unit ids, wired to the real AdMob account
 /// for both Android and iOS.
@@ -13,7 +14,7 @@ class AdService {
   /// ids (these always fill at 100%). If ads still fail to load with those,
   /// the problem is device/network-level (DNS, VPN, clock, firewall), not
   /// the AdMob account or our real ad unit ids. Set back to false when done.
-  static const bool _useTestAdUnitIds = true;
+  static const bool _useTestAdUnitIds = false;
 
   static String get bannerAdUnitId {
     if (_useTestAdUnitIds) {
@@ -46,8 +47,13 @@ class AdService {
   }
 
   /// Admin panelden yönetilen, uygulama genelinde reklamları açıp kapatan bayrak
+  /// — ayrıca Premium kullanıcılar için de reklamları tamamen kapatır.
   static bool get adsEnabled {
     if (!Get.isRegistered<AdsConfigController>()) return true;
-    return Get.find<AdsConfigController>().adsEnabled.value;
+    if (!Get.find<AdsConfigController>().adsEnabled.value) return false;
+    if (Get.isRegistered<AuthController>() && Get.find<AuthController>().isPremium.value) {
+      return false;
+    }
+    return true;
   }
 }

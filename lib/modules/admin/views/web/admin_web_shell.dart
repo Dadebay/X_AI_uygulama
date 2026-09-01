@@ -9,6 +9,7 @@ import 'package:atlas/modules/admin/views/web/pages/web_users_page.dart';
 import 'package:atlas/modules/admin/views/web/pages/web_analytics_page.dart';
 import 'package:atlas/modules/admin/views/web/pages/web_priority_accounts_page.dart';
 import 'package:atlas/modules/admin/views/web/pages/web_ads_settings_page.dart';
+import 'package:atlas/modules/admin/views/web/pages/web_premium_settings_page.dart';
 
 class AdminWebShell extends StatelessWidget {
   const AdminWebShell({super.key});
@@ -53,6 +54,7 @@ class _ShellBody extends StatelessWidget {
                     WebPriorityAccountsPage(),
                     WebAnalyticsPage(),
                     WebAdsSettingsPage(),
+                    WebPremiumSettingsPage(),
                   ],
                 )),
           ),
@@ -142,6 +144,13 @@ class _Sidebar extends StatelessWidget {
             isSelected: ctrl.selectedPage.value == 5,
             theme: theme,
             onTap: () => ctrl.selectPage(5),
+          )),
+          Obx(() => _NavItem(
+            icon: Icons.workspace_premium_outlined,
+            label: 'Premium Fiyatları',
+            isSelected: ctrl.selectedPage.value == 6,
+            theme: theme,
+            onTap: () => ctrl.selectPage(6),
           )),
           const SizedBox(height: 20),
           _sectionLabel('VERİ', theme),

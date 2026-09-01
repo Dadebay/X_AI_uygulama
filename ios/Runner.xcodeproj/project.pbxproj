@@ -462,11 +462,11 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = V793RH49BX;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.1.1;
-				FLUTTER_BUILD_NUMBER = 11;
+				FLUTTER_BUILD_NAME = 1.1.3;
+				FLUTTER_BUILD_NUMBER = 13;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pulse Sports";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
@@ -475,7 +475,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gurbanov.xai;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -658,11 +658,11 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = V793RH49BX;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.1.1;
-				FLUTTER_BUILD_NUMBER = 11;
+				FLUTTER_BUILD_NAME = 1.1.3;
+				FLUTTER_BUILD_NUMBER = 13;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pulse Sports";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
@@ -671,7 +671,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gurbanov.xai;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -694,11 +694,11 @@
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 13;
 				DEVELOPMENT_TEAM = V793RH49BX;
 				ENABLE_BITCODE = NO;
-				FLUTTER_BUILD_NAME = 1.1.1;
-				FLUTTER_BUILD_NUMBER = 11;
+				FLUTTER_BUILD_NAME = 1.1.3;
+				FLUTTER_BUILD_NUMBER = 13;
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Pulse Sports";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
@@ -707,7 +707,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.gurbanov.xai;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

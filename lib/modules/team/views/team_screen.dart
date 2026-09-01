@@ -7,6 +7,8 @@ import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
 import 'package:atlas/widgets/pulse/feed_states.dart';
 import 'package:atlas/widgets/team/transfer_card.dart';
+import 'package:atlas/core/services/analytics_service.dart';
+import 'package:atlas/modules/auth/controllers/auth_controller.dart';
 
 class TeamScreen extends StatefulWidget {
   final TeamModel team;
@@ -26,6 +28,8 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _tabCtrl = TabController(length: _tabs.length, vsync: this);
+    AnalyticsService.logScreenView('team_detail', screenClass: 'TeamScreen');
+    AnalyticsService.logSelectContent(type: 'team', id: widget.team.name);
   }
 
   @override
@@ -165,18 +169,24 @@ class _TeamScreenState extends State<TeamScreen> with SingleTickerProviderStateM
                 ),
               ),
             ),
-            bottom: TabBar(
-              controller: _tabCtrl,
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: c.textMuted,
-              indicatorColor: AppColors.primary,
-              indicatorSize: TabBarIndicatorSize.label,
-              dividerColor: c.divider,
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, fontFamily: 'Gilroy'),
-              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, fontFamily: 'Gilroy'),
-              tabs: _tabs.map((t) => Tab(text: t)).toList(),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(kTextTabBarHeight),
+              child: Obx(() {
+                final accent = Get.find<AuthController>().isPremium.value ? AppColors.yellow : AppColors.primary;
+                return TabBar(
+                  controller: _tabCtrl,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  labelColor: accent,
+                  unselectedLabelColor: c.textMuted,
+                  indicatorColor: accent,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  dividerColor: c.divider,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, fontFamily: 'Gilroy'),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14, fontFamily: 'Gilroy'),
+                  tabs: _tabs.map((t) => Tab(text: t)).toList(),
+                );
+              }),
             ),
           ),
         ],
@@ -218,6 +228,7 @@ class _AgendaTab extends StatelessWidget {
           ),
         ),
         ...tweets.map((t) => TweetCard(
+              tweetId: t.id,
               username: t.username,
               handle: t.handle,
               content: t.content,
@@ -246,6 +257,7 @@ class _TweetsTab extends StatelessWidget {
       padding: const EdgeInsets.only(top: 8, bottom: 20),
       children: MockData.homeFeed
           .map((t) => TweetCard(
+                tweetId: t.id,
                 username: t.username,
                 handle: t.handle,
                 content: t.content,

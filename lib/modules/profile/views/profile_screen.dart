@@ -11,6 +11,7 @@ import 'package:atlas/widgets/common/section_header.dart';
 import 'package:atlas/widgets/common/settings_row.dart';
 import 'package:atlas/widgets/profile/settings_sheets.dart';
 import 'package:atlas/modules/profile/views/about_page.dart';
+import 'package:atlas/modules/profile/views/premium_screen.dart';
 import 'package:atlas/modules/notifications/views/notifications_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -57,6 +58,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.only(bottom: 32),
           children: [
             const _AuthCard(),
+            const SizedBox(height: 4),
+            const _PremiumCard(),
             const SizedBox(height: 8),
             SectionHeader('settings_section'.tr),
             SettingsRow(
@@ -105,6 +108,75 @@ class _AuthCard extends StatelessWidget {
       final user = auth.user.value;
       if (user == null) return _LoginCard(c: c);
       return _ProfileCard(c: c, auth: auth);
+    });
+  }
+}
+
+class _PremiumCard extends StatelessWidget {
+  const _PremiumCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = Get.find<AuthController>();
+    return Obx(() {
+      final isPremium = auth.isPremium.value;
+      return GestureDetector(
+        onTap: () => Get.to(() => const PremiumScreen(), transition: Transition.cupertino),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(14, 8, 14, 4),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.yellow.withValues(alpha: 0.4), width: 1),
+            // Markalı, temadan bağımsız sabit koyu-altın görünüm — açık temada
+            // önceki yarı saydam sarı üstü beyaz yazı kombinasyonu kontrastı
+            // yetersiz kalıyordu, burada her zaman aynı (yüksek kontrastlı)
+            // görünür.
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2E2200), Color(0xFF1A1400)],
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [AppColors.yellow.withValues(alpha: 0.9), const Color(0xFFB8860B)],
+                  ),
+                ),
+                child: const Center(child: Text('👑', style: TextStyle(fontSize: 20))),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isPremium ? 'Premium Aktif' : "Pulse Premium'a Geç",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15, fontFamily: 'Gilroy'),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      isPremium ? 'Tüm premium özellikler aktif, keyfini çıkar 🎉' : 'Reklamsız kullanım, gelişmiş AI ve daha fazlası',
+                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontFamily: 'Gilroy'),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded, color: Colors.white54, size: 22),
+            ],
+          ),
+        ),
+      );
     });
   }
 }

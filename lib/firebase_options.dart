@@ -57,20 +57,20 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDLCLu03HAVyg7Q4Q03-MNG-EjiDsx_ZP0',
-    appId: '1:256538135498:android:a63a396af1ce3a0f831d33',
-    messagingSenderId: '256538135498',
-    projectId: 'ter-market-504b7',
-    storageBucket: 'ter-market-504b7.firebasestorage.app',
+    apiKey: 'AIzaSyAHmNoIUj-Zp_-7bRcmENX1BqF_2jes8hU',
+    appId: '1:938508656367:android:d0c168f5bfb641ad09051a',
+    messagingSenderId: '938508656367',
+    projectId: 'xaiuygulama',
+    storageBucket: 'xaiuygulama.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBl0Y7BRqBIt5xoVIC-eovPusuSaEqwqx8',
-    appId: '1:256538135498:ios:d682b95e74cc981d831d33',
-    messagingSenderId: '256538135498',
-    projectId: 'ter-market-504b7',
-    storageBucket: 'ter-market-504b7.firebasestorage.app',
-    iosBundleId: 'com.gurbanov.termarket',
+    apiKey: 'AIzaSyAuOWJ1m9OJXPChVvhj3l1Xoml2xFPle6s',
+    appId: '1:938508656367:ios:e540fc8e256e4e3009051a',
+    messagingSenderId: '938508656367',
+    projectId: 'xaiuygulama',
+    storageBucket: 'xaiuygulama.firebasestorage.app',
+    iosBundleId: 'com.gurbanov.xai',
   );
 
 }

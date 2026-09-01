@@ -86,6 +86,7 @@ class WebUsersPage extends StatelessWidget {
                       user: ctrl.users[userIndex],
                       isLast: !showLoadMore && userIndex == ctrl.users.length - 1,
                       theme: t,
+                      ctrl: ctrl,
                     );
                   },
                 ),
@@ -143,7 +144,7 @@ class _TableHeader extends StatelessWidget {
           ),
           Expanded(
             flex: 1,
-            child: Text('DURUM', style: TextStyle(color: t.tableHeader, fontFamily: 'Gilroy', fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+            child: Text('PREMIUM', style: TextStyle(color: t.tableHeader, fontFamily: 'Gilroy', fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
           ),
         ],
       ),
@@ -151,20 +152,39 @@ class _TableHeader extends StatelessWidget {
   }
 }
 
-class _UserRow extends StatelessWidget {
+class _UserRow extends StatefulWidget {
   final int index;
   final Map<String, dynamic> user;
   final bool isLast;
   final AdminTheme theme;
+  final WebAdminController ctrl;
 
-  const _UserRow({required this.index, required this.user, required this.isLast, required this.theme});
+  const _UserRow({required this.index, required this.user, required this.isLast, required this.theme, required this.ctrl});
+
+  @override
+  State<_UserRow> createState() => _UserRowState();
+}
+
+class _UserRowState extends State<_UserRow> {
+  bool _saving = false;
+
+  Future<void> _togglePremium(bool value) async {
+    final uid = widget.user['id']?.toString();
+    if (uid == null || uid.isEmpty) return;
+    setState(() => _saving = true);
+    await widget.ctrl.setUserPremiumStatus(uid, value);
+    if (mounted) setState(() => _saving = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final t = theme;
+    final t = widget.theme;
+    final user = widget.user;
+    final isLast = widget.isLast;
     final name = user['displayName']?.toString() ?? '';
     final email = user['email']?.toString() ?? '';
     final photoUrl = user['photoUrl']?.toString() ?? '';
+    final isPremium = user['isPremium'] == true;
     final createdAt = user['createdAt'];
     String dateStr = '—';
     if (createdAt != null) {
@@ -215,14 +235,26 @@ class _UserRow extends StatelessWidget {
               ),
               Expanded(
                 flex: 1,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text('Aktif', style: TextStyle(color: AppColors.primary, fontFamily: 'Gilroy', fontSize: 11, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-                ),
+                child: _saving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Switch(
+                            value: isPremium,
+                            activeThumbColor: AppColors.primary,
+                            onChanged: _togglePremium,
+                          ),
+                          if (isPremium) ...[
+                            const SizedBox(width: 4),
+                            const Text('👑', style: TextStyle(fontSize: 13)),
+                          ],
+                        ],
+                      ),
               ),
             ],
           ),

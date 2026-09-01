@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:atlas/modules/profile/controllers/language_controller.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 class LanguageSelectionTile extends StatelessWidget {
@@ -27,6 +28,7 @@ class LanguageSelectionTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: InkWell(
           onTap: () {
+            AnalyticsService.logLanguageChanged(code);
             languageController.changeLanguage(code);
             if (goBack) Navigator.of(context).pop();
           },

@@ -1,4 +1,7 @@
+import 'dart:io' show Platform;
+
 import 'package:atlas/core/services/notification_storage_service.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/firebase_options.dart';
 import 'package:atlas/local_notifications_service.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,8 +17,8 @@ class FirebaseMessagingService {
     required LocalNotificationsService localNotificationsService,
   }) async {
     _localNotificationsService = localNotificationsService;
-    await _handlePushNotificationsToken();
     await _requestPermission();
+    await _handlePushNotificationsToken();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     FirebaseMessaging.onMessage.listen(_onForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_onMessageOpenedApp);
@@ -26,17 +29,33 @@ class FirebaseMessagingService {
   }
 
   Future<void> _handlePushNotificationsToken() async {
+    // iOS'ta getToken(), APNS token'ı henüz hazır olmadan çağrılırsa
+    // "apns-token-not-set" hatası fırlatır — Apple bu token'ı izin isteğinden
+    // sonra asenkron olarak sağlıyor, birkaç saniye gecikebiliyor. Elde
+    // edilene kadar kısa aralıklarla yoklanır (en fazla ~10 sn).
+    if (Platform.isIOS) {
+      String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      var attempts = 0;
+      while (apnsToken == null && attempts < 10) {
+        await Future.delayed(const Duration(seconds: 1));
+        apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        attempts++;
+      }
+      print('========== APNS TOKEN ==========');
+      print(apnsToken);
+      print('=================================');
+      if (apnsToken == null) {
+        // Token hâlâ yoksa (örn. push desteklemeyen simülatör) FCM token
+        // isteği zaten aynı hatayı fırlatacağından burada durulur.
+        return;
+      }
+    }
+
     // FCM Token (Android & iOS)
     final String? fcmToken = await FirebaseMessaging.instance.getToken();
     print('========== FCM TOKEN ==========');
     print(fcmToken);
     print('================================');
-
-    // APNS Token (iOS only)
-    final String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    print('========== APNS TOKEN ==========');
-    print(apnsToken);
-    print('=================================');
 
     // await NotificationService().sendDeviceToken();
     FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
@@ -71,6 +90,7 @@ class FirebaseMessagingService {
 
   void _onMessageOpenedApp(RemoteMessage message) {
     print('Notification caused the app to open: ${message.data.toString()}');
+    AnalyticsService.logNotificationOpened(type: message.data['type']?.toString());
     _saveNotification(message);
   }
 

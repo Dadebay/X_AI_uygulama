@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:atlas/core/api/xquik_service.dart';
 import 'package:atlas/core/services/firestore_service.dart';
-import 'package:atlas/core/utils/engagement_filter.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:get/get.dart';
@@ -47,7 +47,16 @@ class HomeController extends GetxController {
 
   // Admin panelden yönetilen, takımlardan bağımsız öncelikli hesaplar listesi
   final priorityAccounts = <String>[].obs;
-  int _minEngagementThreshold = 500;
+
+  // Xquik `/x/tweets/search` API'sinin gerçek etkileşim filtresi parametreleri
+  // (admin panelinden yönetilir). API'ye gönderilir, düşük etkileşimli
+  // tweetler sunucu tarafında elenir — client-side tekrar filtrelemeye
+  // gerek kalmaz, boşuna kredi harcanmaz.
+  int _minFaves = 500;
+  int _minRetweets = 0;
+  int _minReplies = 0;
+  int _minQuotes = 0;
+  int _minViews = 0;
 
   String? _feedCursor;
   final hasMoreFeed = true.obs;
@@ -118,13 +127,13 @@ class HomeController extends GetxController {
         hasMore: true,
       );
       // Ayarları yine de sessizce güncelle (diğer sekmeler/filtreler için)
-      unawaited(Future.wait([_loadPrioritySettings(), _loadEngagementThreshold()]));
+      unawaited(Future.wait([_loadPrioritySettings(), _loadEngagementThresholds()]));
       // Sana Özel hazır; diğer sekmeleri arka planda sırayla ısıt
       unawaited(_preloadSecondaryTabs());
       return;
     }
 
-    await Future.wait([_loadPrioritySettings(), _loadEngagementThreshold()]);
+    await Future.wait([_loadPrioritySettings(), _loadEngagementThresholds()]);
     // Cache'ten içerik gösterdiysek arka planda sessiz yenile (loading gösterme)
     await loadFeed(silent: hasCache);
 
@@ -195,11 +204,16 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<void> _loadEngagementThreshold() async {
+  Future<void> _loadEngagementThresholds() async {
     try {
-      _minEngagementThreshold = await _firestore.getMinEngagementThreshold();
+      final t = await _firestore.getEngagementThresholds();
+      _minFaves = t.minFaves;
+      _minRetweets = t.minRetweets;
+      _minReplies = t.minReplies;
+      _minQuotes = t.minQuotes;
+      _minViews = t.minViews;
     } catch (e) {
-      if (kDebugMode) print('[HomeController] etkileşim eşiği yüklenemedi: $e');
+      if (kDebugMode) print('[HomeController] etkileşim eşikleri yüklenemedi: $e');
     }
   }
 
@@ -240,10 +254,10 @@ class HomeController extends GetxController {
   }
 
   /// Bir kategori chip'inin ilk sayfasını oluşturur:
-  /// 1) Takımın resmi hesaplarından popüler tweetler (eşikten muaf — Takımlar
-  ///    sekmesindeki gibi dolu içerik).
-  /// 2) Hashtag araması (etkileşim filtreli; hepsi eşiğin altındaysa ham sonuçlar
-  ///    etkileşime göre sıralı). Load-more için cursor da döndürülür.
+  /// 1) Takımın resmi hesaplarından popüler tweetler (admin panelindeki
+  ///    minFaves/minRetweets/minReplies/minQuotes eşikleri burada da uygulanır).
+  /// 2) Hashtag araması (aynı eşikler API'ye gönderilir, sonuçlar zaten filtreli gelir).
+  ///    Load-more için cursor da döndürülür.
   Future<({List<TweetModel> tweets, String? cursor})> _buildCategoryFeed(
       String tag) async {
     await _ensureTeams();
@@ -257,6 +271,10 @@ class HomeController extends GetxController {
           team.twitterAccounts,
           perAccount: 10,
           limit: 20,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
         );
         for (final t in accountTweets) {
           if (seen.add(t.id)) result.add(t);
@@ -274,14 +292,14 @@ class HomeController extends GetxController {
             ? team.searchQuery
             : null,
         limit: 20,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
       );
       cursor = res.cursor;
-      var searchTweets = _applyEngagementFilter(res.tweets);
-      if (searchTweets.isEmpty && res.tweets.isNotEmpty) {
-        searchTweets = List<TweetModel>.from(res.tweets)
-          ..sort((a, b) => _engagementScore(b).compareTo(_engagementScore(a)));
-      }
-      for (final t in searchTweets) {
+      for (final t in res.tweets) {
         if (seen.add(t.id)) result.add(t);
       }
     } catch (e) {
@@ -338,17 +356,14 @@ class HomeController extends GetxController {
           category: category,
           customQuery: customQuery,
           cursor: refresh ? null : _feedCursor,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
+          minViews: _minViews,
         );
         if (requestToken != _feedRequestToken) return;
-        var tweets = _applyEngagementFilter(res.tweets);
-        // Kategori chip'lerinde (GS/FB/BJK/Süper Lig...) hashtag araması düşük
-        // etkileşimli tweetler döndürebilir; eşik filtresi hepsini eleyince
-        // "içerik bulunamadı" görünüyordu. Boş bırakmak yerine ham sonuçları
-        // etkileşime göre sıralayıp göster (Takımlar sekmesindeki gibi dolu gelsin).
-        if (category.isNotEmpty && tweets.isEmpty && res.tweets.isNotEmpty) {
-          tweets = List<TweetModel>.from(res.tweets)
-            ..sort((a, b) => _engagementScore(b).compareTo(_engagementScore(a)));
-        }
+        final tweets = res.tweets;
         // Zaten listede olan tweetleri ele (aynı tweet iki kez görünmesin)
         final existing = feedTweets.map((t) => t.id).toSet();
         final fresh = tweets.where((t) => existing.add(t.id)).toList();
@@ -397,21 +412,29 @@ class HomeController extends GetxController {
     final priorityTweets = <TweetModel>[];
     final otherTweets = <TweetModel>[];
 
-    void collect(List<TweetModel> target, List<TweetModel> tweets,
-        {bool filter = false}) {
+    void collect(List<TweetModel> target, List<TweetModel> tweets) {
       for (final t in tweets) {
-        if (filter && !_passesEngagementThreshold(t)) continue;
         if (seen.add(t.id)) target.add(t);
       }
     }
 
     if (priorityAccounts.isNotEmpty) {
       try {
-        // Öncelikli hesapların tüm günlük tweetleri — filtre uygulanmaz.
+        // Öncelikli hesapların tweetleri — admin panelde tanımlı etkileşim
+        // eşiği (minFaves/minRetweets/minReplies/minQuotes) burada da uygulanır.
         // Round-robin ile en yeni tweetler alındığı ve toplam 60 tweet
         // gösterildiği için hesap başına 10 yeterli; indirilen veri ~3 kat azalır.
-        collect(priorityTweets,
-            await _xquik.getLatestTweetsForAccounts(priorityAccounts, perAccount: 10, limit: 60));
+        collect(
+            priorityTweets,
+            await _xquik.getLatestTweetsForAccounts(
+              priorityAccounts,
+              perAccount: 10,
+              limit: 60,
+              minFaves: _minFaves,
+              minRetweets: _minRetweets,
+              minReplies: _minReplies,
+              minQuotes: _minQuotes,
+            ));
       } catch (e) {
         if (kDebugMode) {
           print('[HomeController] öncelikli hesap akışı çekilemedi: $e');
@@ -426,16 +449,30 @@ class HomeController extends GetxController {
           customQuery:
               '(#Galatasaray OR #Fenerbahçe OR #Beşiktaş OR #SüperLig) lang:tr',
           limit: 30,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
+          minViews: _minViews,
         ),
-        filter: true,
       );
     } catch (e) {
       if (kDebugMode) print('[HomeController] gündem akışı çekilemedi: $e');
     }
 
     try {
-      collect(otherTweets, await _xquik.searchTweets(category: '', limit: 30),
-          filter: true);
+      collect(
+        otherTweets,
+        await _xquik.searchTweets(
+          category: '',
+          limit: 30,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
+          minViews: _minViews,
+        ),
+      );
     } catch (e) {
       if (kDebugMode) print('[HomeController] genel akış çekilemedi: $e');
     }
@@ -472,26 +509,6 @@ class HomeController extends GetxController {
   int _engagementScore(TweetModel t) =>
       t.views > 0 ? t.views : (t.likes * 100 + t.retweets * 200);
 
-  /// Öncelikli hesaplar dışındaki tweetlerin gösterilebilmesi için gereken
-  /// minimum görüntülenme (yoksa beğeni) sayısı kontrolü
-  bool _passesEngagementThreshold(TweetModel t) {
-    if (t.views >= _minEngagementThreshold) return true;
-    if (t.views == 0 && t.likes >= _minEngagementThreshold) return true;
-    return false;
-  }
-
-  /// Diğer tüm sekmeler (Gündem, Transfer, Takımlar, ana akışın sonraki
-  /// sayfaları) için ortak eşik filtresi — bkz. [filterByEngagement].
-  List<TweetModel> _applyEngagementFilter(List<TweetModel> tweets,
-      {List<String> extraExempt = const []}) {
-    return filterByEngagement(
-      tweets,
-      priorityAccounts: priorityAccounts,
-      minEngagementThreshold: _minEngagementThreshold,
-      extraExempt: extraExempt,
-    );
-  }
-
   Future<void> loadTrending() async {
     isLoadingTrending.value = true;
     trendingError.value = '';
@@ -500,18 +517,23 @@ class HomeController extends GetxController {
         customQuery:
             '(#Galatasaray OR #Fenerbahçe OR #Beşiktaş OR #SüperLig) lang:tr',
         limit: 15,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
       );
-      final filtered = _applyEngagementFilter(tweets);
       // "Popüler Gündemler" başlığıyla tutarlı olması için en çok görüntülenen
       // (yoksa en çok beğenilen) tweet en üstte gösterilir.
-      filtered.sort((a, b) {
-        final aScore =
-            a.views > 0 ? a.views : (a.likes * 100 + a.retweets * 200);
-        final bScore =
-            b.views > 0 ? b.views : (b.likes * 100 + b.retweets * 200);
-        return bScore.compareTo(aScore);
-      });
-      trendingTweets.assignAll(filtered);
+      final sorted = List<TweetModel>.from(tweets)
+        ..sort((a, b) {
+          final aScore =
+              a.views > 0 ? a.views : (a.likes * 100 + a.retweets * 200);
+          final bScore =
+              b.views > 0 ? b.views : (b.likes * 100 + b.retweets * 200);
+          return bScore.compareTo(aScore);
+        });
+      trendingTweets.assignAll(sorted);
     } catch (e) {
       trendingError.value = e.toString();
       if (kDebugMode) print('[HomeController] gündem tab yüklenemedi: $e');
@@ -544,8 +566,13 @@ class HomeController extends GetxController {
       final tweets = await _xquik.searchTweets(
         customQuery: '#transfer OR #transferhaberleri OR "bonservis" lang:tr',
         limit: 20,
+        minFaves: _minFaves,
+        minRetweets: _minRetweets,
+        minReplies: _minReplies,
+        minQuotes: _minQuotes,
+        minViews: _minViews,
       );
-      transferTweets.assignAll(_applyEngagementFilter(tweets));
+      transferTweets.assignAll(tweets);
     } catch (e) {
       transferError.value = e.toString();
       if (kDebugMode) print('[HomeController] transfer tab yüklenemedi: $e');
@@ -564,14 +591,25 @@ class HomeController extends GetxController {
       final team = dynamicTeams[index];
       List<TweetModel> tweets;
       if (team.twitterAccounts.isNotEmpty) {
-        tweets = await _xquik.getPopularTweetsForAccounts(team.twitterAccounts);
-        // Takımın kendi resmi hesapları bu sekmenin tüm amacı olduğu için eşikten muaf
-        tweets =
-            _applyEngagementFilter(tweets, extraExempt: team.twitterAccounts);
+        // Takımın kendi resmi hesapları — admin panelde tanımlı etkileşim
+        // eşiği (minFaves/minRetweets/minReplies/minQuotes) burada da uygulanır.
+        tweets = await _xquik.getPopularTweetsForAccounts(
+          team.twitterAccounts,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
+        );
       } else if (team.searchQuery.isNotEmpty) {
-        tweets =
-            await _xquik.searchTweets(customQuery: team.searchQuery, limit: 20);
-        tweets = _applyEngagementFilter(tweets);
+        tweets = await _xquik.searchTweets(
+          customQuery: team.searchQuery,
+          limit: 20,
+          minFaves: _minFaves,
+          minRetweets: _minRetweets,
+          minReplies: _minReplies,
+          minQuotes: _minQuotes,
+          minViews: _minViews,
+        );
       } else {
         tweets = [];
       }
@@ -605,6 +643,7 @@ class HomeController extends GetxController {
   }
 
   void onCategorySelected(int index, String tag) {
+    AnalyticsService.logSelectContent(type: 'category', id: tag.isEmpty ? 'all' : tag);
     _currentCategory = tag;
     feedError.value = '';
 
@@ -631,7 +670,7 @@ class HomeController extends GetxController {
 
   /// Pull-to-refresh: o an seçili olan kategoriyi tazeler ve önbelleğini günceller.
   Future<void> refreshAll() async {
-    await Future.wait([_loadPrioritySettings(), _loadEngagementThreshold()]);
+    await Future.wait([_loadPrioritySettings(), _loadEngagementThresholds()]);
     _categoryCache.remove(_currentCategory);
     if (_currentCategory.isEmpty) _mainFeedLoaded = false;
     await loadFeed(category: _currentCategory, refresh: true);

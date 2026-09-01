@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:atlas/core/services/auth_service.dart';
 import 'package:atlas/models/tweet_model.dart';
@@ -5,19 +7,42 @@ import 'package:atlas/models/tweet_model.dart';
 class SavedController extends GetxController {
   static SavedController get to => Get.find();
 
+  /// Ücretsiz kullanıcıların kaydedebileceği maksimum tweet sayısı —
+  /// Premium kullanıcılar için sınır yok.
+  static const int freeLimit = 10;
+
   final _service = AuthService();
   final savedTweets = <TweetModel>[].obs;
   final savedIds = RxSet<String>({});
   final isLoading = true.obs;
 
+  /// Bir tweet daha kaydedilebilir mi? Premium kullanıcılar sınırsız,
+  /// diğerleri [freeLimit] ile sınırlı.
+  bool canSaveMore(bool isPremium) => isPremium || savedIds.length < freeLimit;
+
+  StreamSubscription? _authSub;
+  StreamSubscription? _savedSub;
+
   @override
   void onInit() {
     super.onInit();
-    _listenSaved();
+    // SavedController uygulama açılışında (henüz giriş yapılmadan) oluşturulur.
+    // O anda savedTweetsStream() kullanıcısız olduğu için hep boş bir stream
+    // dönüyor ve isLoading sonsuza dek true kalıyordu. Login/logout ile
+    // Firestore aboneliğini burada yeniden kuruyoruz.
+    _authSub = _service.authStateChanges.listen((_) => _listenSaved());
   }
 
   void _listenSaved() {
-    _service.savedTweetsStream().listen(
+    _savedSub?.cancel();
+    if (!_service.isLoggedIn) {
+      isLoading.value = false;
+      savedTweets.clear();
+      savedIds.clear();
+      return;
+    }
+    isLoading.value = true;
+    _savedSub = _service.savedTweetsStream().listen(
       (list) {
         isLoading.value = false;
         savedTweets.value = list.map(_fromMap).toList();
@@ -25,6 +50,13 @@ class SavedController extends GetxController {
       },
       onError: (_) => isLoading.value = false,
     );
+  }
+
+  @override
+  void onClose() {
+    _authSub?.cancel();
+    _savedSub?.cancel();
+    super.onClose();
   }
 
   bool isSaved(String tweetId) => savedIds.contains(tweetId);

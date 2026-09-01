@@ -32,11 +32,22 @@ class XquikService {
   };
 
   /// Tweet arama — kategori veya özel sorgu ile
+  ///
+  /// [minFaves]/[minRetweets]/[minReplies]/[minQuotes]: Xquik'in
+  /// `/x/tweets/search` endpoint'inin gerçek etkileşim filtresi parametreleri
+  /// (admin panelinde yönetilir). Bunlar API'ye gönderildiğinde düşük
+  /// etkileşimli tweetler sunucu tarafında elenir — client-side'da tekrar
+  /// filtrelemeye gerek kalmaz, boşuna kredi harcanmaz.
   Future<List<TweetModel>> searchTweets({
     String category = '',
     String? customQuery,
     int limit = 20,
     String? cursor,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
+    int? minViews,
   }) async {
     final query = customQuery ?? categoryQueries[category] ?? categoryQueries['']!;
 
@@ -46,17 +57,28 @@ class XquikService {
       'retweets': false,
     };
     if (cursor != null) params['after'] = cursor;
+    if (minFaves != null && minFaves > 0) params['minFaves'] = minFaves;
+    if (minRetweets != null && minRetweets > 0) params['minRetweets'] = minRetweets;
+    if (minReplies != null && minReplies > 0) params['minReplies'] = minReplies;
+    if (minQuotes != null && minQuotes > 0) params['minQuotes'] = minQuotes;
+    if (minViews != null && minViews > 0) params['minViews'] = minViews;
 
     final response = await _dio.get('/x/tweets/search', queryParameters: params);
     return _parseTweetList(response.data);
   }
 
   /// Tweet arama — sonsuz kaydırma için sonraki sayfa imlecini (cursor) de döndürür.
+  /// Etkileşim parametreleri için bkz. [searchTweets].
   Future<({List<TweetModel> tweets, String? cursor})> searchTweetsPaged({
     String category = '',
     String? customQuery,
     int limit = 20,
     String? cursor,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
+    int? minViews,
   }) async {
     final query = customQuery ?? categoryQueries[category] ?? categoryQueries['']!;
     final Map<String, dynamic> params = {
@@ -65,6 +87,11 @@ class XquikService {
       'retweets': false,
     };
     if (cursor != null && cursor.isNotEmpty) params['after'] = cursor;
+    if (minFaves != null && minFaves > 0) params['minFaves'] = minFaves;
+    if (minRetweets != null && minRetweets > 0) params['minRetweets'] = minRetweets;
+    if (minReplies != null && minReplies > 0) params['minReplies'] = minReplies;
+    if (minQuotes != null && minQuotes > 0) params['minQuotes'] = minQuotes;
+    if (minViews != null && minViews > 0) params['minViews'] = minViews;
 
     final response = await _dio.get('/x/tweets/search', queryParameters: params);
     final data = response.data;
@@ -80,13 +107,25 @@ class XquikService {
   }
 
   /// Belirli bir hesabın timeline'ı
-  Future<List<TweetModel>> getUserTimeline(String username, {int limit = 10}) async {
+  Future<List<TweetModel>> getUserTimeline(
+    String username, {
+    int limit = 10,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
+  }) async {
     // Panelden girilen handle'larda sık görülen baştaki "@" ve boşlukları temizle;
     // aksi halde API bunları geçersiz kullanıcı adı sayıp 404 (user_not_found) döner.
     final handle = username.trim().replaceAll('@', '');
+    final Map<String, dynamic> params = {'pageSize': limit, 'replies': false};
+    if (minFaves != null && minFaves > 0) params['minFaves'] = minFaves;
+    if (minRetweets != null && minRetweets > 0) params['minRetweets'] = minRetweets;
+    if (minReplies != null && minReplies > 0) params['minReplies'] = minReplies;
+    if (minQuotes != null && minQuotes > 0) params['minQuotes'] = minQuotes;
     final response = await _dio.get(
       '/x/users/$handle/tweets',
-      queryParameters: {'limit': limit, 'replies': false},
+      queryParameters: params,
     );
     return _parseTweetList(response.data);
   }
@@ -96,16 +135,31 @@ class XquikService {
   /// Çok sayıda hesapta (örn. 20 öncelikli hesap) tüm istekleri aynı anda
   /// atmak API'yi/bağlantıyı boğup connection timeout'a yol açıyordu; bu
   /// yöntem eşzamanlı istek sayısını sınırlayarak güvenilirliği artırır.
+  ///
+  /// [minFaves]/[minRetweets]/[minReplies]/[minQuotes]: admin panelde
+  /// yönetilen etkileşim eşikleri — API'ye gönderilir, düşük etkileşimli
+  /// tweetler sunucu tarafında elenir.
   Future<List<List<TweetModel>>> _fetchTimelinesBatched(
     List<String> accounts, {
     required int perAccount,
     int concurrency = 4,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
   }) async {
     final results = <List<TweetModel>>[];
     for (var i = 0; i < accounts.length; i += concurrency) {
       final batch = accounts.skip(i).take(concurrency);
       final batchResults = await Future.wait(
-        batch.map((u) => getUserTimeline(u, limit: perAccount).catchError((e) => _logAccountFetchError(u, e))),
+        batch.map((u) => getUserTimeline(
+              u,
+              limit: perAccount,
+              minFaves: minFaves,
+              minRetweets: minRetweets,
+              minReplies: minReplies,
+              minQuotes: minQuotes,
+            ).catchError((e) => _logAccountFetchError(u, e))),
       );
       results.addAll(batchResults);
     }
@@ -113,8 +167,21 @@ class XquikService {
   }
 
   /// Birden fazla hesabın tweetlerini çek, likes'a göre sırala
-  Future<List<TweetModel>> getMultiAccountFeed({int perAccount = 5}) async {
-    final results = await _fetchTimelinesBatched(footballAccounts, perAccount: perAccount);
+  Future<List<TweetModel>> getMultiAccountFeed({
+    int perAccount = 5,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
+  }) async {
+    final results = await _fetchTimelinesBatched(
+      footballAccounts,
+      perAccount: perAccount,
+      minFaves: minFaves,
+      minRetweets: minRetweets,
+      minReplies: minReplies,
+      minQuotes: minQuotes,
+    );
     final merged = results.expand((list) => list).toList();
     merged.sort((a, b) => b.likes.compareTo(a.likes));
     return merged;
@@ -126,9 +193,20 @@ class XquikService {
     List<String> accounts, {
     int perAccount = 5,
     int limit = 25,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
   }) async {
     if (accounts.isEmpty) return [];
-    final perAccountLists = await _fetchTimelinesBatched(accounts, perAccount: perAccount);
+    final perAccountLists = await _fetchTimelinesBatched(
+      accounts,
+      perAccount: perAccount,
+      minFaves: minFaves,
+      minRetweets: minRetweets,
+      minReplies: minReplies,
+      minQuotes: minQuotes,
+    );
     final result = <TweetModel>[];
     var i = 0;
     while (result.length < limit && perAccountLists.any((l) => i < l.length)) {
@@ -146,9 +224,20 @@ class XquikService {
     List<String> accounts, {
     int perAccount = 10,
     int limit = 20,
+    int? minFaves,
+    int? minRetweets,
+    int? minReplies,
+    int? minQuotes,
   }) async {
     if (accounts.isEmpty) return [];
-    final results = await _fetchTimelinesBatched(accounts, perAccount: perAccount);
+    final results = await _fetchTimelinesBatched(
+      accounts,
+      perAccount: perAccount,
+      minFaves: minFaves,
+      minRetweets: minRetweets,
+      minReplies: minReplies,
+      minQuotes: minQuotes,
+    );
     final merged = results.expand((list) => list).toList();
     merged.sort((a, b) {
       final aScore = a.views > 0 ? a.views : (a.likes * 100 + a.retweets * 200);
@@ -176,7 +265,7 @@ class XquikService {
       final item = e.value as Map<String, dynamic>;
       return TrendTopic(
         rank: e.key + 1,
-        name: item['name']?.toString().replaceAll('#', '') ?? '',
+        name: _sanitizeUtf16(item['name']?.toString().replaceAll('#', '') ?? ''),
         postCount: _formatCount(item['tweet_volume'] ?? item['tweetVolume'] ?? 0),
       );
     }).toList();
@@ -192,8 +281,7 @@ class XquikService {
     );
     final merged = [...football, ...derived];
     return [
-      for (var i = 0; i < merged.length; i++)
-        TrendTopic(rank: i + 1, name: merged[i].name, postCount: merged[i].postCount),
+      for (var i = 0; i < merged.length; i++) TrendTopic(rank: i + 1, name: merged[i].name, postCount: merged[i].postCount),
     ];
   }
 
@@ -221,10 +309,7 @@ class XquikService {
         }
       }
       final sorted = counts.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-      return sorted
-          .take(limit)
-          .map((e) => TrendTopic(rank: 0, name: labels[e.key]!, postCount: '${e.value} gönderi'))
-          .toList();
+      return sorted.take(limit).map((e) => TrendTopic(rank: 0, name: labels[e.key]!, postCount: '${e.value} gönderi')).toList();
     } catch (e) {
       if (kDebugMode) print('[XquikService] hashtag trendleri çıkarılamadı: $e');
       return [];
@@ -324,6 +409,32 @@ class XquikService {
     return parsed;
   }
 
+  /// API'den gelen metinlerde bazen eşleşmemiş (lone) UTF-16 surrogate
+  /// code unit'leri geliyor (bozuk emoji/özel karakter kodlaması) — bunlar
+  /// Flutter'ın metin motoruna ("string is not well-formed UTF-16" hatasıyla)
+  /// TextSpan içinde verildiğinde uygulamayı çökertiyor. Eşleşmemiş
+  /// surrogate'leri atarak metni güvenli hale getirir.
+  String _sanitizeUtf16(String input) {
+    final units = input.codeUnits;
+    final buffer = StringBuffer();
+    for (var i = 0; i < units.length; i++) {
+      final unit = units[i];
+      if (unit >= 0xD800 && unit <= 0xDBFF) {
+        if (i + 1 < units.length && units[i + 1] >= 0xDC00 && units[i + 1] <= 0xDFFF) {
+          buffer.writeCharCode(unit);
+          buffer.writeCharCode(units[i + 1]);
+          i++;
+        }
+        // eşleşmeyen yüksek surrogate — atla
+      } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+        // eşleşmeyen düşük surrogate — atla
+      } else {
+        buffer.writeCharCode(unit);
+      }
+    }
+    return buffer.toString();
+  }
+
   TweetModel? _parseSingleTweet(Map<String, dynamic> t) {
     try {
       final author = t['author'] ?? t['user'] ?? {};
@@ -332,10 +443,10 @@ class XquikService {
       final metrics = t['publicMetrics'] ?? t['public_metrics'] ?? t['metrics'] ?? {};
 
       final id = t['id']?.toString() ?? t['tweetId']?.toString() ?? '';
-      final username = author['name']?.toString() ?? author['displayName']?.toString() ?? '';
+      final username = _sanitizeUtf16(author['name']?.toString() ?? author['displayName']?.toString() ?? '');
       final handle = author['userName']?.toString() ?? author['username']?.toString() ?? author['screen_name']?.toString() ?? '';
       final avatarUrl = author['profilePicture']?.toString() ?? author['profile_image_url']?.toString() ?? '';
-      final content = t['text']?.toString() ?? t['full_text']?.toString() ?? '';
+      final content = _sanitizeUtf16(t['text']?.toString() ?? t['full_text']?.toString() ?? '');
       final createdAt = t['createdAt']?.toString() ?? t['created_at']?.toString() ?? '';
       final isVerified = author['isBlueVerified'] == true || author['verified'] == true;
       final likes = _parseInt(t['likeCount'] ?? metrics['likeCount'] ?? metrics['favorite_count'] ?? metrics['likes'] ?? 0);

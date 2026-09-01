@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:atlas/core/services/ad_service.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/modules/profile/views/premium_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -44,10 +45,12 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
   late AnimationController _pulseCtrl;
   InterstitialAd? _interstitialAd;
   bool _adShown = false;
+  bool _adLoading = true;
 
   @override
   void initState() {
     super.initState();
+    AnalyticsService.logScreenView('ad_overlay', screenClass: 'AdOverlayScreen');
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
@@ -68,7 +71,10 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
   }
 
   void _loadInterstitial() {
-    if (!AdService.isSupported) return;
+    if (!AdService.isSupported) {
+      setState(() => _adLoading = false);
+      return;
+    }
     InterstitialAd.load(
       adUnitId: AdService.interstitialAdUnitId,
       request: AdService.request,
@@ -76,11 +82,14 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
         onAdLoaded: (ad) {
           AdService.log('Interstitial loaded OK (adUnitId=${AdService.interstitialAdUnitId})');
           _interstitialAd = ad;
+          if (mounted) setState(() => _adLoading = false);
           _showInterstitialIfReady();
         },
         onAdFailedToLoad: (error) {
           AdService.log('Interstitial failed to load: code=${error.code} domain=${error.domain} message=${error.message}');
+          AnalyticsService.logAdFailed(adType: 'interstitial', placement: 'ad_overlay', error: error.message);
           _interstitialAd = null;
+          if (mounted) setState(() => _adLoading = false);
         },
       ),
     );
@@ -95,12 +104,15 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
     if (ad == null) return;
     _adShown = true;
     ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdShowedFullScreenContent: (_) =>
+          AnalyticsService.logAdImpression(adType: 'interstitial', placement: 'ad_overlay'),
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
         _interstitialAd = null;
         _finish();
       },
-      onAdFailedToShowFullScreenContent: (ad, _) {
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        AnalyticsService.logAdFailed(adType: 'interstitial', placement: 'ad_overlay', error: error.message);
         ad.dispose();
         _interstitialAd = null;
         _finish();
@@ -177,81 +189,88 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                     ),
                   ),
                 ),
-                // Ad image
-                Expanded(
-                  child: Image.asset(
-                    'assets/images/banner.png',
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D)],
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text('📢', style: TextStyle(fontSize: 80)),
-                      ),
-                    ),
-                  ),
-                ),
-                // Ad text block
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black],
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'HIZINI\nORTAYA KOY',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          fontFamily: 'Gilroy',
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Yeni sezon koleksiyonu şimdi satışta.',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                          fontFamily: 'Gilroy',
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text(
-                          'Şimdi Keşfet',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontFamily: 'Gilroy',
-                            fontSize: 15,
+                // Gerçek reklam yüklenene kadar (veya yüklenemezse statik
+                // görsel yerine) yükleniyor durumu gösterilir — test reklamlar
+                // anında %100 dolduğu için bu daha önce fark edilmiyordu.
+                if (_adLoading)
+                  Expanded(child: _AdLoadingView())
+                else ...[
+                  // Ad image
+                  Expanded(
+                    child: Image.asset(
+                      'assets/images/banner.png',
+                      width: double.infinity,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D)],
                           ),
                         ),
+                        child: const Center(
+                          child: Text('📢', style: TextStyle(fontSize: 80)),
+                        ),
                       ),
-                      const SizedBox(height: 60), // space for bottom bar
-                    ],
+                    ),
                   ),
-                ),
+                  // Ad text block
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black],
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'HIZINI\nORTAYA KOY',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            fontFamily: 'Gilroy',
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Yeni sezon koleksiyonu şimdi satışta.',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            fontFamily: 'Gilroy',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text(
+                            'Şimdi Keşfet',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              fontFamily: 'Gilroy',
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 60), // space for bottom bar
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -284,12 +303,46 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                 top: 12,
                 bottom: MediaQuery.of(context).padding.bottom + 12,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Skip button
+                  // Premium CTA — reklamları tamamen kaldırmak için her zaman
+                  // görünür bir yönlendirme; "Reklamı Geç"in erken dokunuşa
+                  // bağlı gizli davranışından bağımsız, ayrı bir giriş noktası.
                   GestureDetector(
-                    onTap: _handleSkip,
+                    onTap: () => Get.to(() => const PremiumScreen(), transition: Transition.cupertino),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Reklamsız kullanmak için Premium\'a geç',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Gilroy',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Skip button
+                      GestureDetector(
+                        onTap: _handleSkip,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
@@ -340,11 +393,44 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                         fontSize: 12,
                       ),
                     ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
+        ),
         ],
+      ),
+    );
+  }
+}
+
+class _AdLoadingView extends StatelessWidget {
+  const _AdLoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D)],
+        ),
+      ),
+      child: const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5),
+            SizedBox(height: 14),
+            Text(
+              'Reklam yükleniyor...',
+              style: TextStyle(color: Colors.white70, fontFamily: 'Gilroy', fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }

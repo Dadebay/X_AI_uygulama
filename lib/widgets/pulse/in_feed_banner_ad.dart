@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:atlas/core/services/ad_service.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/themes/tc.dart';
 
 /// Small banner ad meant to be interleaved between tweet cards in a feed.
@@ -41,8 +42,11 @@ class _InFeedBannerAdState extends State<InFeedBannerAd> {
         },
         onAdFailedToLoad: (ad, error) {
           AdService.log('Banner failed to load: code=${error.code} domain=${error.domain} message=${error.message}');
+          AnalyticsService.logAdFailed(adType: 'banner', placement: 'in_feed', error: error.message);
           ad.dispose();
         },
+        onAdImpression: (_) => AnalyticsService.logAdImpression(adType: 'banner', placement: 'in_feed'),
+        onAdClicked: (_) => AnalyticsService.logAdClick(adType: 'banner', placement: 'in_feed'),
       ),
     );
     _ad = ad;

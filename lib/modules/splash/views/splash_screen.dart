@@ -1,13 +1,11 @@
 import 'dart:async';
 import 'dart:io' show InternetAddress, Platform;
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:atlas/core/api/api_service.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/shared/no_internet_screen.dart';
@@ -73,7 +71,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
 
     await _syncFcmToken();
-    await _syncDevice();
     Get.offAll(() => const MainScreen(), binding: MainBinding());
   }
 
@@ -149,69 +146,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     }
 
     print('[FCM] Current token: $token');
-    print('[DEVICE ID: ${Get.find<GetStorage>().read<String>('device_id')}]');
 
     final storage = Get.find<GetStorage>();
-    final stored = storage.read<String>('fcm_token');
-    if (stored == token) return;
-
-    await ApiService().registerFcmToken(token);
     storage.write('fcm_token', token);
-    print('[FCM] Token registered successfully: $token');
   }
-
-  Future<void> _syncDevice() async {
-    try {
-      final storage = Get.find<GetStorage>();
-      var deviceId = storage.read<String>('device_id');
-
-      // Create device ID only if it doesn't exist
-      // Don't migrate legacy IDs to preserve favorites and other data
-      if (deviceId == null) {
-        deviceId = await _buildDeviceId();
-        storage.write('device_id', deviceId);
-      }
-
-      // Only register once per unique device_id
-      final registered = storage.read<String>('device_registered');
-      if (registered == deviceId) return;
-
-      await ApiService().registerDevice(deviceId);
-      storage.write('device_registered', deviceId);
-      print('[Device] Registered successfully: $deviceId');
-    } catch (e) {
-      print('[Device] Registration failed: $e');
-    }
-  }
-
-  Future<String> _buildDeviceId() async {
-    final now = DateTime.now();
-    final timestamp = '${now.year}${_twoDigits(now.month)}${_twoDigits(now.day)}-${_twoDigits(now.hour)}${_twoDigits(now.minute)}${_twoDigits(now.second)}';
-    final entropy = now.microsecondsSinceEpoch.toRadixString(36);
-    final rawName = await _readDeviceName();
-    final safeName = rawName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '_').replaceAll(RegExp(r'_+'), '_').replaceAll(RegExp(r'^_|_$'), '');
-
-    return 'atlas-${safeName.isEmpty ? 'unknown' : safeName}-$timestamp-$entropy';
-  }
-
-  Future<String> _readDeviceName() async {
-    try {
-      final info = DeviceInfoPlugin();
-      if (Platform.isAndroid) {
-        final android = await info.androidInfo;
-        return '${android.brand} ${android.model}';
-      }
-      if (Platform.isIOS) {
-        final ios = await info.iosInfo;
-        return '${ios.name} ${ios.utsname.machine}';
-      }
-      return Platform.operatingSystem;
-    } catch (_) {
-      return Platform.operatingSystem;
-    }
-  }
-
-  String _twoDigits(int value) => value.toString().padLeft(2, '0');
 
   @override
   Widget build(BuildContext context) {

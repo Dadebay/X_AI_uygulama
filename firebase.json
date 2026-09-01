@@ -1,4 +1,7 @@
 {
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "hosting": {
     "public": "public",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
@@ -45,7 +48,7 @@
       },
       {
         "source": "/admin/main.dart.js",
-        "headers": [{"key": "Cache-Control", "value": "public, max-age=3600"}]
+        "headers": [{"key": "Cache-Control", "value": "no-cache, must-revalidate"}]
       },
       {
         "source": "/admin/canvaskit/**",

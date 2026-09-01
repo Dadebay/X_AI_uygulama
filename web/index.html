@@ -34,11 +34,35 @@
 </head>
 <body>
   <style>
-    body { margin: 0; background: #0D0D0D; }
+    @font-face {
+      font-family: 'Gilroy';
+      src: url('assets/assets/fonts/Gilroy-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Gilroy';
+      src: url('assets/assets/fonts/Gilroy-Medium.ttf') format('truetype');
+      font-weight: 500;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Gilroy';
+      src: url('assets/assets/fonts/Gilroy-SemiBold.ttf') format('truetype');
+      font-weight: 600;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Gilroy';
+      src: url('assets/assets/fonts/Gilroy-Bold.ttf') format('truetype');
+      font-weight: 700;
+      font-display: swap;
+    }
+    body { margin: 0; background: #0D0D0D; font-family: 'Gilroy', system-ui, -apple-system, sans-serif; }
     #loading {
       position: fixed; inset: 0; display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 18px;
-      background: #0D0D0D; font-family: system-ui, -apple-system, sans-serif;
+      background: #0D0D0D; font-family: 'Gilroy', system-ui, -apple-system, sans-serif;
       transition: opacity .35s ease;
     }
     #loading .ring {

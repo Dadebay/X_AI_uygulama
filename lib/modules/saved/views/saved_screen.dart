@@ -179,6 +179,7 @@ class _SavedList extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final t = saved.savedTweets[i];
                     return TweetCard(
+                      tweetId: t.id,
                       username: t.username,
                       handle: t.handle,
                       avatarUrl: t.avatarUrl,

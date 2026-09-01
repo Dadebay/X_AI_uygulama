@@ -9,11 +9,13 @@ import 'package:atlas/shared/ad_overlay_screen.dart';
 import 'package:atlas/modules/auth/controllers/auth_controller.dart';
 import 'package:atlas/modules/auth/views/login_screen.dart';
 import 'package:atlas/modules/saved/controllers/saved_controller.dart';
+import 'package:atlas/modules/profile/views/premium_screen.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/widgets/app_network_image.dart';
 import 'package:atlas/widgets/full_screen_image_viewer.dart';
 import 'package:atlas/widgets/pulse/linkified_text.dart';
 import 'package:atlas/modules/post_detail/views/tweet_detail_screen.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 
 class TweetCard extends StatelessWidget {
   final String tweetId;
@@ -55,11 +57,13 @@ class TweetCard extends StatelessWidget {
 
   void _openOnX() {
     if (tweetUrl == null) return;
+    AnalyticsService.logTweetOpen(tweetId, source: 'open_on_x');
     AdOverlayScreen.open(tweetUrl!);
   }
 
   void _share() {
     final url = tweetUrl ?? 'https://x.com/$handle';
+    AnalyticsService.logTweetShare(tweetId.isNotEmpty ? tweetId : handle);
     Share.share('$content\n\n— @$handle\n$url');
   }
 
@@ -85,6 +89,7 @@ class TweetCard extends StatelessWidget {
 
   void _openDetail() {
     if (tweetId.isEmpty) return;
+    AnalyticsService.logTweetOpen(tweetId, source: 'detail');
     Get.to(
       () => TweetDetailScreen(
         tweet: TweetModel(
@@ -327,6 +332,11 @@ class _BookmarkButton extends StatelessWidget {
               return;
             }
             if (tweetId.isEmpty) return;
+            if (!isSaved && !saved.canSaveMore(auth.isPremium.value)) {
+              _showSavedLimitDialog(context);
+              return;
+            }
+            AnalyticsService.logTweetSave(tweetId, !isSaved);
             saved.toggleSave(TweetModel(
               id: tweetId,
               username: tweet.username,
@@ -356,6 +366,73 @@ class _BookmarkButton extends StatelessWidget {
       return const SizedBox.shrink();
     }
   }
+}
+
+/// Ücretsiz kullanıcı [SavedController.freeLimit] sınırına ulaşınca gösterilir —
+/// Premium'a geçerek sınırsız kaydetme teklif eder.
+void _showSavedLimitDialog(BuildContext context) {
+  final c = Tc.of(context);
+  Get.dialog(
+    Dialog(
+      backgroundColor: c.card,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔖', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 12),
+            Text(
+              'Kaydedilenler sınırına ulaştın',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w900, fontSize: 18, fontFamily: 'Gilroy'),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Ücretsiz hesapta en fazla ${SavedController.freeLimit} tweet kaydedebilirsin. '
+              'Sınırsız kaydetmek için Premium\'a geç.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy', height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: c.textSecondary,
+                      side: BorderSide(color: c.divider),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Vazgeç', style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Get.back();
+                      Get.to(() => const PremiumScreen(), transition: Transition.cupertino);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text("Premium'a Geç", style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 class _Avatar extends StatelessWidget {

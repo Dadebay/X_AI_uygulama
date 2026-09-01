@@ -5,6 +5,8 @@ import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/core/api/xquik_service.dart';
+import 'package:atlas/core/services/firestore_service.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:atlas/widgets/pulse/tweet_card.dart';
 
 class TrendDetailScreen extends StatefulWidget {
@@ -17,6 +19,7 @@ class TrendDetailScreen extends StatefulWidget {
 
 class _TrendDetailScreenState extends State<TrendDetailScreen> {
   final _xquik = XquikService();
+  final _firestore = FirestoreService();
   final _tweets = <TweetModel>[].obs;
   final _isLoading = true.obs;
   final _error = ''.obs;
@@ -24,6 +27,8 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.logScreenView('trend_detail', screenClass: 'TrendDetailScreen');
+    AnalyticsService.logTrendView(widget.topic.name);
     _load();
   }
 
@@ -31,9 +36,21 @@ class _TrendDetailScreenState extends State<TrendDetailScreen> {
     _isLoading.value = true;
     _error.value = '';
     try {
+      EngagementThresholds thresholds;
+      try {
+        thresholds = await _firestore.getEngagementThresholds();
+      } catch (_) {
+        thresholds = const EngagementThresholds(
+            minFaves: 500, minRetweets: 0, minReplies: 0, minQuotes: 0, minViews: 0);
+      }
       final results = await _xquik.searchTweets(
         customQuery: '#${widget.topic.name} OR "${widget.topic.name}"',
         limit: 30,
+        minFaves: thresholds.minFaves,
+        minRetweets: thresholds.minRetweets,
+        minReplies: thresholds.minReplies,
+        minQuotes: thresholds.minQuotes,
+        minViews: thresholds.minViews,
       );
       _tweets.assignAll(results);
     } catch (e) {

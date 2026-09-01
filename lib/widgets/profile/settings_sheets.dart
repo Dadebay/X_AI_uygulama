@@ -5,6 +5,7 @@ import 'package:atlas/themes/tc.dart';
 import 'package:atlas/widgets/common/settings_row.dart';
 import 'package:atlas/modules/profile/controllers/language_controller.dart';
 import 'package:atlas/modules/profile/controllers/theme_controller.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 import 'package:hugeicons/hugeicons.dart';
 
 // ─── Shared bottom-sheet header ───────────────────────────────────────────────
@@ -98,6 +99,7 @@ class LanguageSheet extends StatelessWidget {
                           fontWeight: selected ? FontWeight.w700 : FontWeight.w400)),
                   trailing: selected ? const Icon(Icons.check_circle_rounded, color: AppColors.primary) : null,
                   onTap: () {
+                    AnalyticsService.logLanguageChanged(lang['code']!);
                     ctrl.changeLanguage(lang['code']!);
                     Get.back();
                   },
@@ -130,7 +132,7 @@ class ThemeSheet extends StatelessWidget {
                 label: 'theme_dark_label'.tr,
                 description: 'theme_dark_desc'.tr,
                 selected: ctrl.isDark.value,
-                onTap: () { ctrl.toggleTheme(true); Get.back(); },
+                onTap: () { AnalyticsService.logThemeChanged(true); ctrl.toggleTheme(true); Get.back(); },
               ),
               const SizedBox(height: 12),
               _ThemeOption(
@@ -138,7 +140,7 @@ class ThemeSheet extends StatelessWidget {
                 label: 'theme_light_label'.tr,
                 description: 'theme_light_desc'.tr,
                 selected: !ctrl.isDark.value,
-                onTap: () { ctrl.toggleTheme(false); Get.back(); },
+                onTap: () { AnalyticsService.logThemeChanged(false); ctrl.toggleTheme(false); Get.back(); },
               ),
             ],
           ),

@@ -6,6 +6,7 @@ import 'package:atlas/themes/tc.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/core/api/xquik_service.dart';
 import 'package:atlas/modules/explore/views/trend_detail_screen.dart';
+import 'package:atlas/core/services/analytics_service.dart';
 
 class AllTrendsScreen extends StatefulWidget {
   const AllTrendsScreen({super.key});
@@ -35,6 +36,7 @@ class _AllTrendsScreenState extends State<AllTrendsScreen> {
   @override
   void initState() {
     super.initState();
+    AnalyticsService.logScreenView('all_trends', screenClass: 'AllTrendsScreen');
     _load();
   }
 

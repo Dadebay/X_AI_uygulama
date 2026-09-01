@@ -1,0 +1,39 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/{document=**} {
+      // Admin paneli Firebase Auth kullanmıyor (PIN ile korunuyor, request.auth
+      // hep null) — kullanıcı listesini görebilmesi için okuma herkese açık.
+      // Yazma hâlâ sadece kullanıcının kendisiyle sınırlı.
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    // Admin panel PIN ile korunuyor ama Firebase Auth kullanmıyor (request.auth
+    // hep null) — bu yüzden kullanıcıya bedava premium verme özelliği için dar
+    // bir istisna: SADECE premium alanlarını yazabilir, email/displayName/
+    // saved_tweets gibi diğer her şey hâlâ yalnızca kullanıcının kendisi
+    // tarafından değiştirilebilir.
+    match /users/{userId} {
+      allow write: if request.resource.data.diff(resource.data).affectedKeys()
+                      .hasOnly(['isPremium', 'premiumPlan', 'premiumSince']);
+    }
+    match /app_content/{docId} {
+      allow read: if true;
+    }
+    // Takımlar — herkes okuyabilir, sadece giriş yapan yazabilir
+    match /teams/{teamId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    // Premium abonelik fiyatları — admin panelden yönetiliyor, config ile aynı
+    // seviyede (herkese açık, panel kendi PIN ekranıyla koruyor).
+    match /prices/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

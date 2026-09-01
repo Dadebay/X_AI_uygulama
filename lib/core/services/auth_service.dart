@@ -114,6 +114,7 @@ class AuthService {
         'email': user.email ?? '',
         'photoUrl': user.photoURL ?? '',
         'createdAt': FieldValue.serverTimestamp(),
+        'isPremium': false,
       });
     }
   }

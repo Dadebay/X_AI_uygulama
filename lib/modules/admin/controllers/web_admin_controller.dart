@@ -27,14 +27,36 @@ class WebAdminController extends GetxController {
 
   // Ana sayfada tüm günlük tweetleri filtresiz gösterilecek öncelikli hesaplar
   final priorityAccounts = <String>[].obs;
-  final minEngagementThreshold = 500.obs;
+
+  // Xquik `/x/tweets/search` API'sinin gerçek etkileşim filtresi parametreleri
+  final minFaves = 500.obs;
+  final minRetweets = 0.obs;
+  final minReplies = 0.obs;
+  final minQuotes = 0.obs;
+  final minViews = 0.obs;
 
   // Uygulama genelinde reklamların açık/kapalı olduğu bayrak
   final adsEnabled = true.obs;
   final isLoadingAdsEnabled = false.obs;
 
+  // Premium abonelik fiyatlandırması (prices/premium) — uygulamadaki
+  // PremiumScreen bu değerleri canlı okur.
+  final premiumMonthlyPrice = 49.99.obs;
+  final premiumYearlyPrice = 399.99.obs;
+  final premiumYearlyDiscountLabel = '%33 indirim!'.obs;
+  final premiumCurrency = '₺'.obs;
+  final isLoadingPremiumPricing = false.obs;
+
   // Panel açıldıktan sonra sayfa başına tek seferlik veri yüklemesi yapmak için
   final _loadedPages = <int>{};
+
+  StreamSubscription<PremiumPricing>? _premiumPricingSub;
+
+  @override
+  void onClose() {
+    _premiumPricingSub?.cancel();
+    super.onClose();
+  }
 
   int get totalTwitterAccounts => teams.fold(0, (sum, t) => sum + t.twitterAccounts.length);
 
@@ -58,7 +80,11 @@ class WebAdminController extends GetxController {
   void _applySettings(Map<String, dynamic> settings) {
     final rawAccounts = (settings['priorityAccounts'] as List<dynamic>?) ?? [];
     priorityAccounts.assignAll(rawAccounts.map((a) => a.toString()));
-    minEngagementThreshold.value = (settings['minEngagementThreshold'] as num?)?.toInt() ?? 500;
+    minFaves.value = (settings['minFaves'] as num?)?.toInt() ?? 500;
+    minRetweets.value = (settings['minRetweets'] as num?)?.toInt() ?? 0;
+    minReplies.value = (settings['minReplies'] as num?)?.toInt() ?? 0;
+    minQuotes.value = (settings['minQuotes'] as num?)?.toInt() ?? 0;
+    minViews.value = (settings['minViews'] as num?)?.toInt() ?? 0;
     adsEnabled.value = settings['adsEnabled'] as bool? ?? true;
   }
 
@@ -89,6 +115,9 @@ class WebAdminController extends GetxController {
         break;
       case 5:
         // Ayarlar verifyPin sırasında zaten yüklendi
+        break;
+      case 6:
+        _listenPremiumPricing();
         break;
     }
   }
@@ -192,10 +221,15 @@ class WebAdminController extends GetxController {
     try {
       final results = await Future.wait([
         _firestore.getPriorityAccounts(),
-        _firestore.getMinEngagementThreshold(),
+        _firestore.getEngagementThresholds(),
       ]);
       priorityAccounts.assignAll(results[0] as List<String>);
-      minEngagementThreshold.value = results[1] as int;
+      final t = results[1] as EngagementThresholds;
+      minFaves.value = t.minFaves;
+      minRetweets.value = t.minRetweets;
+      minReplies.value = t.minReplies;
+      minQuotes.value = t.minQuotes;
+      minViews.value = t.minViews;
     } catch (_) {} finally {
       isLoadingPriorityAccounts.value = false;
     }
@@ -229,13 +263,30 @@ class WebAdminController extends GetxController {
     }
   }
 
-  Future<bool> updateMinEngagementThreshold(int value) async {
+  Future<bool> updateEngagementThresholds({
+    required int minFaves,
+    required int minRetweets,
+    required int minReplies,
+    required int minQuotes,
+    required int minViews,
+  }) async {
     try {
-      await _firestore.setMinEngagementThreshold(value);
-      minEngagementThreshold.value = value;
+      final thresholds = EngagementThresholds(
+        minFaves: minFaves,
+        minRetweets: minRetweets,
+        minReplies: minReplies,
+        minQuotes: minQuotes,
+        minViews: minViews,
+      );
+      await _firestore.setEngagementThresholds(thresholds);
+      this.minFaves.value = minFaves;
+      this.minRetweets.value = minRetweets;
+      this.minReplies.value = minReplies;
+      this.minQuotes.value = minQuotes;
+      this.minViews.value = minViews;
       return true;
     } catch (e) {
-      Get.snackbar('Hata', 'Eşik güncellenemedi: $e');
+      Get.snackbar('Hata', 'Eşikler güncellenemedi: $e');
       return false;
     }
   }
@@ -256,6 +307,63 @@ class WebAdminController extends GetxController {
       return true;
     } catch (e) {
       Get.snackbar('Hata', 'Reklam ayarı güncellenemedi: $e');
+      return false;
+    }
+  }
+
+  /// Firestore'daki `prices/premium` dokümanını canlı dinler — panel üstünde
+  /// başka bir sekme/oturum fiyatı değiştirse bile, yenile tuşuna basmaya
+  /// gerek kalmadan formda anında güncel değer görünür.
+  void _listenPremiumPricing() {
+    if (_premiumPricingSub != null) return;
+    isLoadingPremiumPricing.value = true;
+    _premiumPricingSub = _firestore.watchPremiumPricing().listen((p) {
+      premiumMonthlyPrice.value = p.monthlyPrice;
+      premiumYearlyPrice.value = p.yearlyPrice;
+      premiumYearlyDiscountLabel.value = p.yearlyDiscountLabel;
+      premiumCurrency.value = p.currency;
+      isLoadingPremiumPricing.value = false;
+    });
+  }
+
+  Future<bool> updatePremiumPricing({
+    required double monthlyPrice,
+    required double yearlyPrice,
+    required String yearlyDiscountLabel,
+    required String currency,
+  }) async {
+    try {
+      final pricing = PremiumPricing(
+        monthlyPrice: monthlyPrice,
+        yearlyPrice: yearlyPrice,
+        yearlyDiscountLabel: yearlyDiscountLabel,
+        currency: currency,
+      );
+      await _firestore.setPremiumPricing(pricing);
+      premiumMonthlyPrice.value = monthlyPrice;
+      premiumYearlyPrice.value = yearlyPrice;
+      premiumYearlyDiscountLabel.value = yearlyDiscountLabel;
+      premiumCurrency.value = currency;
+      return true;
+    } catch (e) {
+      Get.snackbar('Hata', 'Fiyatlar güncellenemedi: $e');
+      return false;
+    }
+  }
+
+  /// Admin panelden bir kullanıcıya bedava premium verir/kaldırır — gerçek
+  /// bir ödeme olmadan doğrudan Firestore'daki isPremium bayrağını değiştirir.
+  Future<bool> setUserPremiumStatus(String uid, bool isPremium) async {
+    try {
+      await _firestore.setUserPremium(uid, isPremium);
+      final index = users.indexWhere((u) => u['id'] == uid);
+      if (index != -1) {
+        users[index] = {...users[index], 'isPremium': isPremium};
+        users.refresh();
+      }
+      return true;
+    } catch (e) {
+      Get.snackbar('Hata', 'Kullanıcı premium durumu güncellenemedi: $e');
       return false;
     }
   }

@@ -13,13 +13,21 @@ class WebPriorityAccountsPage extends StatefulWidget {
 
 class _WebPriorityAccountsPageState extends State<WebPriorityAccountsPage> {
   final _accountCtrl = TextEditingController();
-  final _thresholdCtrl = TextEditingController();
-  bool _thresholdSeeded = false;
+  final _minFavesCtrl = TextEditingController();
+  final _minRetweetsCtrl = TextEditingController();
+  final _minRepliesCtrl = TextEditingController();
+  final _minQuotesCtrl = TextEditingController();
+  final _minViewsCtrl = TextEditingController();
+  bool _thresholdsSeeded = false;
 
   @override
   void dispose() {
     _accountCtrl.dispose();
-    _thresholdCtrl.dispose();
+    _minFavesCtrl.dispose();
+    _minRetweetsCtrl.dispose();
+    _minRepliesCtrl.dispose();
+    _minQuotesCtrl.dispose();
+    _minViewsCtrl.dispose();
     super.dispose();
   }
 
@@ -66,9 +74,13 @@ class _WebPriorityAccountsPageState extends State<WebPriorityAccountsPage> {
             if (ctrl.isLoadingPriorityAccounts.value && ctrl.priorityAccounts.isEmpty) {
               return const Center(child: CircularProgressIndicator(color: AppColors.primary));
             }
-            if (!_thresholdSeeded) {
-              _thresholdCtrl.text = ctrl.minEngagementThreshold.value.toString();
-              _thresholdSeeded = true;
+            if (!_thresholdsSeeded) {
+              _minFavesCtrl.text = ctrl.minFaves.value.toString();
+              _minRetweetsCtrl.text = ctrl.minRetweets.value.toString();
+              _minRepliesCtrl.text = ctrl.minReplies.value.toString();
+              _minQuotesCtrl.text = ctrl.minQuotes.value.toString();
+              _minViewsCtrl.text = ctrl.minViews.value.toString();
+              _thresholdsSeeded = true;
             }
             return SingleChildScrollView(
               padding: const EdgeInsets.all(28),
@@ -149,29 +161,24 @@ class _WebPriorityAccountsPageState extends State<WebPriorityAccountsPage> {
                       theme: t,
                       icon: Icons.visibility_outlined,
                       title: 'Diğer Tweetler İçin Minimum Etkileşim',
-                      description: 'Yukarıdaki hesaplar dışından gelen (gündem ve genel akış) tweetler, ana sayfada gösterilebilmek için en az bu kadar görüntülenmeye (veya görüntülenme yoksa beğeniye) sahip olmalı.',
-                      child: Row(
+                      description: 'Yukarıdaki hesaplar dışından gelen (gündem ve genel akış) tweetler için Xquik arama API\'sine gönderilen minimum eşikler. Filtre API tarafında uygulanır — eşiği geçmeyen tweetler hiç çekilmez, kredi harcanmaz. Min. görüntülenme yalnızca arama sonuçlarına uygulanır (öncelikli hesap/takım akışlarında Xquik bu filtreyi desteklemiyor).',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _thresholdCtrl,
-                              keyboardType: TextInputType.number,
-                              style: TextStyle(color: t.textPrimary, fontFamily: 'Gilroy', fontSize: 14),
-                              decoration: InputDecoration(
-                                labelText: 'Minimum görüntülenme',
-                                labelStyle: TextStyle(color: t.textSecondary, fontFamily: 'Gilroy', fontSize: 13),
-                                filled: true,
-                                fillColor: t.bg,
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: t.border)),
-                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: t.border)),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              ),
-                            ),
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 12,
+                            children: [
+                              _EngagementNumberField(theme: t, controller: _minFavesCtrl, label: 'Min. beğeni'),
+                              _EngagementNumberField(theme: t, controller: _minRetweetsCtrl, label: 'Min. retweet'),
+                              _EngagementNumberField(theme: t, controller: _minRepliesCtrl, label: 'Min. yanıt'),
+                              _EngagementNumberField(theme: t, controller: _minQuotesCtrl, label: 'Min. alıntı'),
+                              _EngagementNumberField(theme: t, controller: _minViewsCtrl, label: 'Min. görüntülenme'),
+                            ],
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(height: 14),
                           ElevatedButton(
-                            onPressed: () => _saveThreshold(ctrl),
+                            onPressed: () => _saveThresholds(ctrl),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
@@ -202,15 +209,27 @@ class _WebPriorityAccountsPageState extends State<WebPriorityAccountsPage> {
     });
   }
 
-  void _saveThreshold(WebAdminController ctrl) {
-    final value = int.tryParse(_thresholdCtrl.text.trim());
-    if (value == null || value < 0) {
-      Get.snackbar('Geçersiz değer', 'Lütfen geçerli bir sayı girin', backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
+  void _saveThresholds(WebAdminController ctrl) {
+    final minFaves = int.tryParse(_minFavesCtrl.text.trim());
+    final minRetweets = int.tryParse(_minRetweetsCtrl.text.trim());
+    final minReplies = int.tryParse(_minRepliesCtrl.text.trim());
+    final minQuotes = int.tryParse(_minQuotesCtrl.text.trim());
+    final minViews = int.tryParse(_minViewsCtrl.text.trim());
+    if ([minFaves, minRetweets, minReplies, minQuotes, minViews].any((v) => v == null || v < 0)) {
+      Get.snackbar('Geçersiz değer', 'Lütfen tüm alanlara geçerli bir sayı girin', backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
       return;
     }
-    ctrl.updateMinEngagementThreshold(value).then((success) {
+    ctrl
+        .updateEngagementThresholds(
+      minFaves: minFaves!,
+      minRetweets: minRetweets!,
+      minReplies: minReplies!,
+      minQuotes: minQuotes!,
+      minViews: minViews!,
+    )
+        .then((success) {
       if (success) {
-        Get.snackbar('Kaydedildi', 'Minimum görüntülenme eşiği güncellendi', backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
+        Get.snackbar('Kaydedildi', 'Etkileşim eşikleri güncellendi', backgroundColor: const Color(0xFF1A1A1A), colorText: Colors.white);
       }
     });
   }
@@ -322,6 +341,37 @@ class _AccountInput extends StatelessWidget {
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: t.border)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      ),
+    );
+  }
+}
+
+class _EngagementNumberField extends StatelessWidget {
+  final AdminTheme theme;
+  final TextEditingController controller;
+  final String label;
+
+  const _EngagementNumberField({required this.theme, required this.controller, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = theme;
+    return SizedBox(
+      width: 150,
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        style: TextStyle(color: t.textPrimary, fontFamily: 'Gilroy', fontSize: 14),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: t.textSecondary, fontFamily: 'Gilroy', fontSize: 13),
+          filled: true,
+          fillColor: t.bg,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: t.border)),
+          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: t.border)),
+          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ),
       ),
     );
   }
