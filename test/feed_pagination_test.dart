@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:atlas/core/api/xquik_service.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:atlas/modules/home/controllers/home_controller.dart';
@@ -14,6 +16,7 @@ TweetModel tweet(String id) => TweetModel(
 
 class FakeFeed extends XquikService {
   final requestedCursors = <String?>[];
+  final requestedCategories = <String>[];
 
   @override
   Future<TweetPage> searchTweetPage({
@@ -23,6 +26,7 @@ class FakeFeed extends XquikService {
     String? cursor,
   }) async {
     requestedCursors.add(cursor);
+    requestedCategories.add(category);
     if (cursor == null) {
       return TweetPage(
           tweets: [tweet('1'), tweet('2')],
@@ -30,6 +34,22 @@ class FakeFeed extends XquikService {
           hasMore: true);
     }
     return TweetPage(tweets: [tweet('2'), tweet('3')], hasMore: false);
+  }
+}
+
+class DeferredFeed extends XquikService {
+  final requests = <Completer<TweetPage>>[];
+
+  @override
+  Future<TweetPage> searchTweetPage({
+    String category = '',
+    String? customQuery,
+    int limit = 20,
+    String? cursor,
+  }) {
+    final request = Completer<TweetPage>();
+    requests.add(request);
+    return request.future;
   }
 }
 
@@ -47,6 +67,34 @@ void main() {
     expect(service.requestedCursors, [null, 'page-2']);
     expect(controller.feedTweets.map((item) => item.id), ['1', '2', '3']);
     expect(controller.hasMoreFeed.value, isFalse);
+  });
+
+  test('Load More keeps the selected category', () async {
+    final service = FakeFeed();
+    final controller = HomeController(xquik: service);
+
+    await controller.loadFeed(category: 'GS', refresh: true);
+    await controller.loadFeed();
+
+    expect(service.requestedCategories, ['GS', 'GS']);
+  });
+
+  test('a previous feed response cannot replace a refreshed category',
+      () async {
+    final service = DeferredFeed();
+    final controller = HomeController(xquik: service);
+
+    final older = controller.loadFeed();
+    final newer = controller.loadFeed(category: 'FB', refresh: true);
+    service.requests[1]
+        .complete(TweetPage(tweets: [tweet('new')], hasMore: false));
+    await newer;
+    service.requests[0]
+        .complete(TweetPage(tweets: [tweet('old')], hasMore: false));
+    await older;
+
+    expect(controller.feedTweets.single.id, 'new');
+    expect(controller.isLoadingFeed.value, isFalse);
   });
 
   test('search sends a cursor and honors has_more and next_cursor', () async {
