@@ -10,7 +10,9 @@ class TeamFeedDef {
 }
 
 class HomeController extends GetxController {
-  final XquikService _xquik = XquikService();
+  HomeController({XquikService? xquik}) : _xquik = xquik ?? XquikService();
+
+  final XquikService _xquik;
 
   final feedTweets = <TweetModel>[].obs;
   final trendingTweets = <TweetModel>[].obs;
@@ -73,17 +75,19 @@ class HomeController extends GetxController {
     isLoadingFeed.value = true;
     feedError.value = '';
     try {
-      final tweets = await _xquik.searchTweets(
+      final page = await _xquik.searchTweetPage(
         category: category,
         customQuery: customQuery,
         cursor: refresh ? null : _feedCursor,
       );
       if (refresh || _feedCursor == null) {
-        feedTweets.assignAll(tweets);
+        feedTweets.assignAll(page.tweets);
       } else {
-        feedTweets.addAll(tweets);
+        final seen = feedTweets.map((tweet) => tweet.id).toSet();
+        feedTweets.addAll(page.tweets.where((tweet) => seen.add(tweet.id)));
       }
-      hasMoreFeed.value = tweets.isNotEmpty;
+      _feedCursor = page.nextCursor;
+      hasMoreFeed.value = page.hasMore;
     } catch (e) {
       feedError.value = e.toString();
     } finally {

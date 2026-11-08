@@ -2,8 +2,19 @@ import 'package:atlas/core/api/xquik_client.dart';
 import 'package:atlas/models/tweet_model.dart';
 import 'package:dio/dio.dart';
 
+class TweetPage {
+  const TweetPage(
+      {required this.tweets, this.nextCursor, required this.hasMore});
+
+  final List<TweetModel> tweets;
+  final String? nextCursor;
+  final bool hasMore;
+}
+
 class XquikService {
-  final Dio _dio = XquikClient.instance;
+  XquikService({Dio? dio}) : _dio = dio ?? XquikClient.instance;
+
+  final Dio _dio;
 
   // Futbol hesapları — tweet kaynakları
   static const List<String> footballAccounts = [
@@ -36,21 +47,50 @@ class XquikService {
     int limit = 20,
     String? cursor,
   }) async {
-    final query = customQuery ?? categoryQueries[category] ?? categoryQueries['']!;
+    return (await searchTweetPage(
+      category: category,
+      customQuery: customQuery,
+      limit: limit,
+      cursor: cursor,
+    ))
+        .tweets;
+  }
+
+  Future<TweetPage> searchTweetPage({
+    String category = '',
+    String? customQuery,
+    int limit = 20,
+    String? cursor,
+  }) async {
+    final query =
+        customQuery ?? categoryQueries[category] ?? categoryQueries['']!;
 
     final Map<String, dynamic> params = {
       'q': query,
       'limit': limit,
       'retweets': false,
     };
-    if (cursor != null) params['after'] = cursor;
+    if (cursor != null) params['cursor'] = cursor;
 
-    final response = await _dio.get('/x/tweets/search', queryParameters: params);
-    return _parseTweetList(response.data);
+    final response =
+        await _dio.get('/x/tweets/search', queryParameters: params);
+    final data = response.data;
+    final tweets = _parseTweetList(data);
+    final map = data is Map ? data : const <String, dynamic>{};
+    final nextCursor = (map['next_cursor'] ?? map['nextCursor'])?.toString();
+    final validCursor =
+        nextCursor != null && nextCursor.isNotEmpty && nextCursor != cursor;
+    return TweetPage(
+      tweets: tweets,
+      nextCursor: validCursor ? nextCursor : null,
+      hasMore:
+          validCursor && (map['has_more'] ?? map['hasMore'] ?? true) == true,
+    );
   }
 
   /// Belirli bir hesabın timeline'ı
-  Future<List<TweetModel>> getUserTimeline(String username, {int limit = 10}) async {
+  Future<List<TweetModel>> getUserTimeline(String username,
+      {int limit = 10}) async {
     final response = await _dio.get(
       '/x/users/$username/tweets',
       queryParameters: {'limit': limit, 'replies': false},
@@ -60,7 +100,9 @@ class XquikService {
 
   /// Birden fazla hesabın tweetlerini çek, likes'a göre sırala
   Future<List<TweetModel>> getMultiAccountFeed({int perAccount = 5}) async {
-    final futures = footballAccounts.map((u) => getUserTimeline(u, limit: perAccount).catchError((_) => <TweetModel>[]));
+    final futures = footballAccounts.map((u) =>
+        getUserTimeline(u, limit: perAccount)
+            .catchError((_) => <TweetModel>[]));
     final results = await Future.wait(futures);
     final merged = results.expand((list) => list).toList();
     merged.sort((a, b) => b.likes.compareTo(a.likes));
@@ -69,15 +111,18 @@ class XquikService {
 
   /// Türkiye trend konuları (woeid: 23424969)
   Future<List<TrendTopic>> getTrends() async {
-    final response = await _dio.get('/x/trends', queryParameters: {'woeid': 23424969});
+    final response =
+        await _dio.get('/x/trends', queryParameters: {'woeid': 23424969});
     final data = response.data;
-    final List items = data is List ? data : (data['trends'] ?? data['data'] ?? []);
+    final List items =
+        data is List ? data : (data['trends'] ?? data['data'] ?? []);
     return items.asMap().entries.map((e) {
       final item = e.value as Map<String, dynamic>;
       return TrendTopic(
         rank: e.key + 1,
         name: item['name']?.toString().replaceAll('#', '') ?? '',
-        postCount: _formatCount(item['tweet_volume'] ?? item['tweetVolume'] ?? 0),
+        postCount:
+            _formatCount(item['tweet_volume'] ?? item['tweetVolume'] ?? 0),
       );
     }).toList();
   }
@@ -138,13 +183,15 @@ class XquikService {
   }
 
   /// Monitör event'lerini getir
-  Future<List<TweetModel>> getMonitorEvents(String monitorId, {int limit = 20}) async {
+  Future<List<TweetModel>> getMonitorEvents(String monitorId,
+      {int limit = 20}) async {
     final response = await _dio.get('/events', queryParameters: {
       'monitorId': monitorId,
       'limit': limit,
     });
     final data = response.data;
-    final List items = data is List ? data : (data['items'] ?? data['data'] ?? []);
+    final List items =
+        data is List ? data : (data['items'] ?? data['data'] ?? []);
     return items
         .map((e) {
           final tweet = e['tweet'] ?? e['data'] ?? e;
@@ -161,27 +208,55 @@ class XquikService {
     if (data is List) {
       items = data;
     } else if (data is Map) {
-      items = data['tweets'] ?? data['data'] ?? data['results'] ?? data['items'] ?? [];
+      items = data['tweets'] ??
+          data['data'] ??
+          data['results'] ??
+          data['items'] ??
+          [];
     }
-    return items.map((e) => _parseSingleTweet(e as Map<String, dynamic>)).whereType<TweetModel>().toList();
+    return items
+        .map((e) => _parseSingleTweet(e as Map<String, dynamic>))
+        .whereType<TweetModel>()
+        .toList();
   }
 
   TweetModel? _parseSingleTweet(Map<String, dynamic> t) {
     try {
       final author = t['author'] ?? t['user'] ?? {};
-      final metrics = t['publicMetrics'] ?? t['public_metrics'] ?? t['metrics'] ?? {};
+      final metrics =
+          t['publicMetrics'] ?? t['public_metrics'] ?? t['metrics'] ?? {};
 
       final id = t['id']?.toString() ?? t['tweetId']?.toString() ?? '';
-      final username = author['name']?.toString() ?? author['displayName']?.toString() ?? '';
-      final handle = author['userName']?.toString() ?? author['username']?.toString() ?? author['screen_name']?.toString() ?? '';
-      final avatarUrl = author['profilePicture']?.toString() ?? author['profile_image_url']?.toString() ?? '';
+      final username =
+          author['name']?.toString() ?? author['displayName']?.toString() ?? '';
+      final handle = author['userName']?.toString() ??
+          author['username']?.toString() ??
+          author['screen_name']?.toString() ??
+          '';
+      final avatarUrl = author['profilePicture']?.toString() ??
+          author['profile_image_url']?.toString() ??
+          '';
       final content = t['text']?.toString() ?? t['full_text']?.toString() ?? '';
-      final createdAt = t['createdAt']?.toString() ?? t['created_at']?.toString() ?? '';
-      final isVerified = author['isBlueVerified'] == true || author['verified'] == true;
-      final likes = _parseInt(metrics['likeCount'] ?? metrics['favorite_count'] ?? metrics['likes'] ?? 0);
-      final retweets = _parseInt(metrics['retweetCount'] ?? metrics['retweet_count'] ?? metrics['retweets'] ?? 0);
-      final replies = _parseInt(metrics['replyCount'] ?? metrics['reply_count'] ?? metrics['replies'] ?? 0);
-      final tweetUrl = t['url']?.toString() ?? (handle.isNotEmpty && id.isNotEmpty ? 'https://x.com/$handle/status/$id' : null);
+      final createdAt =
+          t['createdAt']?.toString() ?? t['created_at']?.toString() ?? '';
+      final isVerified =
+          author['isBlueVerified'] == true || author['verified'] == true;
+      final likes = _parseInt(metrics['likeCount'] ??
+          metrics['favorite_count'] ??
+          metrics['likes'] ??
+          0);
+      final retweets = _parseInt(metrics['retweetCount'] ??
+          metrics['retweet_count'] ??
+          metrics['retweets'] ??
+          0);
+      final replies = _parseInt(metrics['replyCount'] ??
+          metrics['reply_count'] ??
+          metrics['replies'] ??
+          0);
+      final tweetUrl = t['url']?.toString() ??
+          (handle.isNotEmpty && id.isNotEmpty
+              ? 'https://x.com/$handle/status/$id'
+              : null);
 
       if (id.isEmpty || content.isEmpty) return null;
 
@@ -211,9 +286,8 @@ class XquikService {
     for (final item in raw) {
       if (item is! Map) continue;
       final type = item['type']?.toString() ?? 'photo';
-      final url = item['media_url_https']?.toString() ??
-          item['url']?.toString() ??
-          '';
+      final url =
+          item['media_url_https']?.toString() ?? item['url']?.toString() ?? '';
       if (url.isEmpty) continue;
       // metin içindeki t.co linkleri görsel değil, sadece gerçek media_url'leri al
       if (!url.contains('pbs.twimg.com') && !url.contains('twimg.com')) {
@@ -230,12 +304,28 @@ class XquikService {
   List<String> _inferTags(String text, String handle) {
     final lower = text.toLowerCase();
     final tags = <String>[];
-    if (lower.contains('galatasaray') || lower.contains(' gs ') || handle.toLowerCase().contains('galatasaray')) tags.add('GS');
-    if (lower.contains('fenerbahçe') || lower.contains('fenerbahce') || lower.contains(' fb ') || handle.toLowerCase().contains('fenerbahce')) tags.add('FB');
-    if (lower.contains('beşiktaş') || lower.contains('besiktas') || lower.contains(' bjk ') || handle.toLowerCase() == 'bjk') tags.add('BJK');
+    if (lower.contains('galatasaray') ||
+        lower.contains(' gs ') ||
+        handle.toLowerCase().contains('galatasaray')) {
+      tags.add('GS');
+    }
+    if (lower.contains('fenerbahçe') ||
+        lower.contains('fenerbahce') ||
+        lower.contains(' fb ') ||
+        handle.toLowerCase().contains('fenerbahce')) {
+      tags.add('FB');
+    }
+    if (lower.contains('beşiktaş') ||
+        lower.contains('besiktas') ||
+        lower.contains(' bjk ') ||
+        handle.toLowerCase() == 'bjk') {
+      tags.add('BJK');
+    }
     if (lower.contains('transfer')) tags.add('Transfer');
     if (lower.contains('champions') || lower.contains(' ucl ')) tags.add('UCL');
-    if (lower.contains('süper lig') || lower.contains('superlig')) tags.add('Süper Lig');
+    if (lower.contains('süper lig') || lower.contains('superlig')) {
+      tags.add('Süper Lig');
+    }
     return tags;
   }
 
@@ -262,7 +352,20 @@ class XquikService {
       if (diff.inMinutes < 60) return '${diff.inMinutes}dk';
       if (diff.inHours < 24) return '${diff.inHours}s';
       // 24 saatten eskiyse: gün ay saat:dakika
-      final months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+      final months = [
+        'Oca',
+        'Şub',
+        'Mar',
+        'Nis',
+        'May',
+        'Haz',
+        'Tem',
+        'Ağu',
+        'Eyl',
+        'Eki',
+        'Kas',
+        'Ara'
+      ];
       final month = months[dt.month - 1];
       final hour = dt.hour.toString().padLeft(2, '0');
       final min = dt.minute.toString().padLeft(2, '0');
@@ -281,8 +384,18 @@ class XquikService {
 
     // Twitter formatı: "Wed Jun 17 08:18:41 +0000 2026"
     final months = {
-      'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
-      'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
+      'Jan': 1,
+      'Feb': 2,
+      'Mar': 3,
+      'Apr': 4,
+      'May': 5,
+      'Jun': 6,
+      'Jul': 7,
+      'Aug': 8,
+      'Sep': 9,
+      'Oct': 10,
+      'Nov': 11,
+      'Dec': 12,
     };
     final parts = raw.split(' ');
     // parts: [Wed, Jun, 17, 08:18:41, +0000, 2026]

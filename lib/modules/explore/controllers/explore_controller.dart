@@ -3,7 +3,9 @@ import 'package:atlas/models/tweet_model.dart';
 import 'package:get/get.dart';
 
 class ExploreController extends GetxController {
-  final XquikService _xquik = XquikService();
+  ExploreController({XquikService? xquik}) : _xquik = xquik ?? XquikService();
+
+  final XquikService _xquik;
 
   final trendTopics = <TrendTopic>[].obs;
   final popularTweets = <TweetModel>[].obs;
@@ -15,8 +17,11 @@ class ExploreController extends GetxController {
 
   final trendsError = ''.obs;
   final popularError = ''.obs;
+  final searchError = ''.obs;
 
   String _lastQuery = '';
+  String get lastQuery => _lastQuery;
+  int _searchGeneration = 0;
 
   @override
   void onInit() {
@@ -33,7 +38,7 @@ class ExploreController extends GetxController {
       trendTopics.assignAll(trends.take(8).toList());
     } catch (e) {
       trendsError.value = e.toString();
-      trendTopics.assignAll(MockData.trendTopics);
+      trendTopics.clear();
     } finally {
       isLoadingTrends.value = false;
     }
@@ -51,19 +56,22 @@ class ExploreController extends GetxController {
       popularTweets.assignAll(tweets);
     } catch (e) {
       popularError.value = e.toString();
-      popularTweets.assignAll(MockData.homeFeed);
+      popularTweets.clear();
     } finally {
       isLoadingPopular.value = false;
     }
   }
 
-  Future<void> search(String query) async {
+  Future<void> search(String query, {bool retry = false}) async {
     final q = query.trim();
-    if (q == _lastQuery) return;
+    if (q == _lastQuery && !retry) return;
     _lastQuery = q;
+    final generation = ++_searchGeneration;
+    searchError.value = '';
 
     if (q.isEmpty) {
       searchResults.clear();
+      isLoadingSearch.value = false;
       return;
     }
 
@@ -73,24 +81,24 @@ class ExploreController extends GetxController {
         customQuery: '$q lang:tr',
         limit: 20,
       );
-      searchResults.assignAll(tweets);
-    } catch (_) {
-      searchResults.assignAll(
-        MockData.homeFeed
-            .where((t) =>
-                t.content.toLowerCase().contains(q.toLowerCase()) ||
-                t.username.toLowerCase().contains(q.toLowerCase()))
-            .toList(),
-      );
+      if (generation == _searchGeneration) searchResults.assignAll(tweets);
+    } catch (e) {
+      if (generation == _searchGeneration) {
+        searchError.value = e.toString();
+        searchResults.clear();
+      }
     } finally {
-      isLoadingSearch.value = false;
+      if (generation == _searchGeneration) isLoadingSearch.value = false;
     }
   }
 
   @override
   Future<void> refresh() async {
+    _searchGeneration++;
     _lastQuery = '';
     searchResults.clear();
+    searchError.value = '';
+    isLoadingSearch.value = false;
     await Future.wait([loadTrends(), loadPopularTweets()]);
   }
 }
