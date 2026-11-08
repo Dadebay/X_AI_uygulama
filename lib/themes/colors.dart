@@ -9,14 +9,14 @@ abstract class AppColors {
   static const divider = Color(0xFF2A2A2A);
 
   // Light background palette
-  static const lightBackground = Color(0xFFF2F2F7);   // iOS-style soft grey bg
-  static const lightSurface = Color(0xFFFFFFFF);       // white cards on grey bg
+  static const lightBackground = Color(0xFFF2F2F7); // iOS-style soft grey bg
+  static const lightSurface = Color(0xFFFFFFFF); // white cards on grey bg
   static const lightSurfaceElevated = Color(0xFFF2F2F7);
   static const lightCard = Color(0xFFFFFFFF);
-  static const lightDivider = Color(0xFFD1D1D6);       // iOS separator grey
-  static const lightTextPrimary = Color(0xFF0A0A0A);   // near-black, strong
-  static const lightTextSecondary = Color(0xFF3C3C43);  // iOS secondary label
-  static const lightTextMuted = Color(0xFF8E8E93);      // iOS tertiary label
+  static const lightDivider = Color(0xFFD1D1D6); // iOS separator grey
+  static const lightTextPrimary = Color(0xFF0A0A0A); // near-black, strong
+  static const lightTextSecondary = Color(0xFF3C3C43); // iOS secondary label
+  static const lightTextMuted = Color(0xFF8E8E93); // iOS tertiary label
 
   // Accent — Pulse green
   static const primary = Color(0xFF22B241);

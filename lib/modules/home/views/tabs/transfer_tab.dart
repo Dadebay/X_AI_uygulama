@@ -21,8 +21,11 @@ class TransferTab extends StatelessWidget {
             children: [
               if (ctrl.isLoadingTransfer.value && ctrl.transferTweets.isEmpty)
                 kFeedLoading
-              else if (ctrl.transferError.value.isNotEmpty && ctrl.transferTweets.isEmpty)
-                FeedErrorState(message: ctrl.transferError.value, onRetry: ctrl.loadTransfer)
+              else if (ctrl.transferError.value.isNotEmpty &&
+                  ctrl.transferTweets.isEmpty)
+                FeedErrorState(
+                    message: ctrl.transferError.value,
+                    onRetry: ctrl.loadTransfer)
               else if (ctrl.transferTweets.isEmpty)
                 const FeedEmptyState()
               else

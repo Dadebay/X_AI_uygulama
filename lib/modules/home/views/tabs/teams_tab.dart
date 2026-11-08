@@ -113,9 +113,8 @@ class _TeamPicker extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : Colors.transparent,
+                        color:
+                            isSelected ? AppColors.primary : Colors.transparent,
                         width: 2,
                       ),
                     ),
@@ -134,9 +133,8 @@ class _TeamPicker extends StatelessWidget {
                       color: isSelected
                           ? Tc.of(context).textPrimary
                           : Tc.of(context).textSecondary,
-                      fontWeight: isSelected
-                          ? FontWeight.w800
-                          : FontWeight.w600,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
                       fontSize: 12,
                       fontFamily: 'Gilroy',
                     ),

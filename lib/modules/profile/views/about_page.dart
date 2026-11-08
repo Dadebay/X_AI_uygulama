@@ -51,17 +51,24 @@ class _AboutPageState extends State<AboutPage> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 22),
+          icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+              color: c.textPrimary, size: 22),
           onPressed: () => Get.back(),
         ),
-        title: Text('about_app'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 20, fontFamily: 'Gilroy')),
+        title: Text('about_app'.tr,
+            style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                fontFamily: 'Gilroy')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Divider(color: c.divider, height: 0.5),
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
           : _error || _data == null
               ? _EmptyState(c: c, onRetry: _load)
               : _Content(data: _data!, c: c),
@@ -116,17 +123,24 @@ class _PrivacyPageState extends State<PrivacyPage> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 22),
+          icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+              color: c.textPrimary, size: 22),
           onPressed: () => Get.back(),
         ),
-        title: Text('privacy_policy'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 20, fontFamily: 'Gilroy')),
+        title: Text('privacy_policy'.tr,
+            style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                fontFamily: 'Gilroy')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Divider(color: c.divider, height: 0.5),
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
           : _error || _data == null
               ? _EmptyState(c: c, onRetry: _load)
               : _Content(data: _data!, c: c),
@@ -181,17 +195,24 @@ class _TermsPageState extends State<TermsPage> {
         centerTitle: true,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 22),
+          icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+              color: c.textPrimary, size: 22),
           onPressed: () => Get.back(),
         ),
-        title: Text('terms_of_use'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 20, fontFamily: 'Gilroy')),
+        title: Text('terms_of_use'.tr,
+            style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                fontFamily: 'Gilroy')),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(0.5),
           child: Divider(color: c.divider, height: 0.5),
         ),
       ),
       body: _loading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary))
           : _error || _data == null
               ? _EmptyState(c: c, onRetry: _load)
               : _Content(data: _data!, c: c),
@@ -209,8 +230,12 @@ class _Content extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Get.find<LanguageController>().selectedLanguage.value;
-    final title = (data['title_$lang'] ?? data['title_tr'] ?? data['title'] ?? '') as String;
-    final body = (data['body_$lang'] ?? data['body_tr'] ?? data['body'] ?? '') as String;
+    final title = (data['title_$lang'] ??
+        data['title_tr'] ??
+        data['title'] ??
+        '') as String;
+    final body =
+        (data['body_$lang'] ?? data['body_tr'] ?? data['body'] ?? '') as String;
     final updatedAt = data['updated_at'] as String?;
 
     return SingleChildScrollView(
@@ -220,14 +245,26 @@ class _Content extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title.isNotEmpty) ...[
-            Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 20, fontFamily: 'Gilroy')),
+            Text(title,
+                style: TextStyle(
+                    color: c.textPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    fontFamily: 'Gilroy')),
             const SizedBox(height: 12),
           ],
           if (updatedAt != null) ...[
-            Text('${'last_updated'.tr}: $updatedAt', style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy')),
+            Text('${'last_updated'.tr}: $updatedAt',
+                style: TextStyle(
+                    color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy')),
             const SizedBox(height: 16),
           ],
-          Text(body, style: TextStyle(color: c.textPrimary, fontFamily: 'Gilroy', fontSize: 15, height: 1.75)),
+          Text(body,
+              style: TextStyle(
+                  color: c.textPrimary,
+                  fontFamily: 'Gilroy',
+                  fontSize: 15,
+                  height: 1.75)),
         ],
       ),
     );
@@ -245,13 +282,20 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(HugeIcons.strokeRoundedFileNotFound, size: 48, color: c.textMuted),
+          Icon(HugeIcons.strokeRoundedFileNotFound,
+              size: 48, color: c.textMuted),
           const SizedBox(height: 12),
-          Text('content_load_error'.tr, style: TextStyle(color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 15)),
+          Text('content_load_error'.tr,
+              style: TextStyle(
+                  color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 15)),
           const SizedBox(height: 16),
           TextButton(
             onPressed: onRetry,
-            child: Text('retry'.tr, style: TextStyle(color: AppColors.primary, fontFamily: 'Gilroy', fontWeight: FontWeight.w700)),
+            child: Text('retry'.tr,
+                style: const TextStyle(
+                    color: AppColors.primary,
+                    fontFamily: 'Gilroy',
+                    fontWeight: FontWeight.w700)),
           ),
         ],
       ),

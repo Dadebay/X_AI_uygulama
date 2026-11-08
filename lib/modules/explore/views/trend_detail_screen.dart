@@ -174,7 +174,8 @@ class _LoadingShimmer extends StatelessWidget {
               children: [
                 // Avatar
                 Container(
-                  width: 40, height: 40,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: c.surface,
                     shape: BoxShape.circle,
@@ -184,19 +185,41 @@ class _LoadingShimmer extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(width: 120, height: 13, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(6))),
+                    Container(
+                        width: 120,
+                        height: 13,
+                        decoration: BoxDecoration(
+                            color: c.surface,
+                            borderRadius: BorderRadius.circular(6))),
                     const SizedBox(height: 6),
-                    Container(width: 80, height: 11, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(6))),
+                    Container(
+                        width: 80,
+                        height: 11,
+                        decoration: BoxDecoration(
+                            color: c.surface,
+                            borderRadius: BorderRadius.circular(6))),
                   ],
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Container(width: double.infinity, height: 12, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(6))),
+            Container(
+                width: double.infinity,
+                height: 12,
+                decoration: BoxDecoration(
+                    color: c.surface, borderRadius: BorderRadius.circular(6))),
             const SizedBox(height: 6),
-            Container(width: double.infinity, height: 12, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(6))),
+            Container(
+                width: double.infinity,
+                height: 12,
+                decoration: BoxDecoration(
+                    color: c.surface, borderRadius: BorderRadius.circular(6))),
             const SizedBox(height: 6),
-            Container(width: 180, height: 12, decoration: BoxDecoration(color: c.surface, borderRadius: BorderRadius.circular(6))),
+            Container(
+                width: 180,
+                height: 12,
+                decoration: BoxDecoration(
+                    color: c.surface, borderRadius: BorderRadius.circular(6))),
           ],
         ),
       ),
@@ -215,7 +238,8 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(HugeIcons.strokeRoundedAlertCircle, color: c.textMuted, size: 40),
+          Icon(HugeIcons.strokeRoundedAlertCircle,
+              color: c.textMuted, size: 40),
           const SizedBox(height: 12),
           Text('Bir hata oluştu',
               style: TextStyle(color: c.textMuted, fontFamily: 'Gilroy')),

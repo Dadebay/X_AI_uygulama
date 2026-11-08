@@ -27,17 +27,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       backgroundColor: c.card,
       isScrollControlled: scrollable,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => sheet,
     );
   }
 
   static String _langName(String code) {
     switch (code) {
-      case 'tr': return 'Türkçe';
-      case 'en': return 'English';
-      case 'ru': return 'Русский';
-      default:   return 'Türkçe';
+      case 'tr':
+        return 'Türkçe';
+      case 'en':
+        return 'English';
+      case 'ru':
+        return 'Русский';
+      default:
+        return 'Türkçe';
     }
   }
 
@@ -50,7 +55,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: c.bg,
         elevation: 1,
         // surfaceTintColor: Colors.transparent,
-        title: Text('profile_title'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w900, fontSize: 22, fontFamily: 'Gilroy')),
+        title: Text('profile_title'.tr,
+            style: TextStyle(
+                color: c.textPrimary,
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+                fontFamily: 'Gilroy')),
       ),
       body: SafeArea(
         child: ListView(
@@ -62,7 +72,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SettingsRow(
               icon: HugeIcons.strokeRoundedNotification01,
               label: 'notifications_settings'.tr,
-              onTap: () => Get.to(() => const NotificationsScreen(), transition: Transition.cupertino),
+              onTap: () => Get.to(() => const NotificationsScreen(),
+                  transition: Transition.cupertino),
             ),
             Obx(() {
               final ctrl = Get.find<LanguageController>();
@@ -76,17 +87,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Obx(() {
               final ctrl = Get.find<ThemeController>();
               return SettingsRow(
-                icon: ctrl.isDark.value ? HugeIcons.strokeRoundedMoon02 : HugeIcons.strokeRoundedSun03,
+                icon: ctrl.isDark.value
+                    ? HugeIcons.strokeRoundedMoon02
+                    : HugeIcons.strokeRoundedSun03,
                 label: 'appearance'.tr,
-                trailing: ctrl.isDark.value ? 'theme_dark'.tr : 'theme_light'.tr,
+                trailing:
+                    ctrl.isDark.value ? 'theme_dark'.tr : 'theme_light'.tr,
                 onTap: () => _openSheet(const ThemeSheet()),
               );
             }),
             const SizedBox(height: 8),
             SectionHeader('general_section'.tr),
-            SettingsRow(icon: HugeIcons.strokeRoundedInformationCircle, label: 'about_app'.tr, onTap: () => Get.to(() => const AboutPage(), transition: Transition.cupertino)),
-            SettingsRow(icon: HugeIcons.strokeRoundedShield01, label: 'privacy_policy'.tr, onTap: () => Get.to(() => const PrivacyPage(), transition: Transition.cupertino)),
-            SettingsRow(icon: HugeIcons.strokeRoundedNote01, label: 'terms_of_use'.tr, onTap: () => Get.to(() => const TermsPage(), transition: Transition.cupertino)),
+            SettingsRow(
+                icon: HugeIcons.strokeRoundedInformationCircle,
+                label: 'about_app'.tr,
+                onTap: () => Get.to(() => const AboutPage(),
+                    transition: Transition.cupertino)),
+            SettingsRow(
+                icon: HugeIcons.strokeRoundedShield01,
+                label: 'privacy_policy'.tr,
+                onTap: () => Get.to(() => const PrivacyPage(),
+                    transition: Transition.cupertino)),
+            SettingsRow(
+                icon: HugeIcons.strokeRoundedNote01,
+                label: 'terms_of_use'.tr,
+                onTap: () => Get.to(() => const TermsPage(),
+                    transition: Transition.cupertino)),
           ],
         ),
       ),
@@ -133,7 +159,8 @@ class _ProfileCard extends StatelessWidget {
           CircleAvatar(
             radius: 28,
             backgroundColor: c.surfaceElevated,
-            backgroundImage: photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+            backgroundImage:
+                photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
             child: photoUrl.isEmpty
                 ? Text(
                     name.isNotEmpty ? name[0].toUpperCase() : '?',
@@ -178,7 +205,8 @@ class _ProfileCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 // Google badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: c.surfaceElevated,
                     borderRadius: BorderRadius.circular(20),
@@ -187,7 +215,8 @@ class _ProfileCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.g_mobiledata_rounded, size: 14, color: c.textMuted),
+                      Icon(Icons.g_mobiledata_rounded,
+                          size: 14, color: c.textMuted),
                       const SizedBox(width: 4),
                       Text(
                         'Google',
@@ -213,7 +242,8 @@ class _ProfileCard extends StatelessWidget {
                 color: AppColors.red.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(HugeIcons.strokeRoundedLogout01, color: AppColors.red, size: 20),
+              child: const Icon(HugeIcons.strokeRoundedLogout01,
+                  color: AppColors.red, size: 20),
             ),
           ),
         ],
@@ -229,20 +259,36 @@ class _ProfileCard extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           'sign_out'.tr,
-          style: TextStyle(color: c.textPrimary, fontFamily: 'Gilroy', fontWeight: FontWeight.w700, fontSize: 16),
+          style: TextStyle(
+              color: c.textPrimary,
+              fontFamily: 'Gilroy',
+              fontWeight: FontWeight.w700,
+              fontSize: 16),
         ),
         content: Text(
           'sign_out_confirm'.tr,
-          style: TextStyle(color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 14),
+          style: TextStyle(
+              color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('cancel'.tr, style: const TextStyle(color: AppColors.primary, fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+            child: Text('cancel'.tr,
+                style: const TextStyle(
+                    color: AppColors.primary,
+                    fontFamily: 'Gilroy',
+                    fontWeight: FontWeight.w600)),
           ),
           TextButton(
-            onPressed: () { Get.back(); auth.signOut(); },
-            child: Text('sign_out'.tr, style: const TextStyle(color: AppColors.red, fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+            onPressed: () {
+              Get.back();
+              auth.signOut();
+            },
+            child: Text('sign_out'.tr,
+                style: const TextStyle(
+                    color: AppColors.red,
+                    fontFamily: 'Gilroy',
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -273,7 +319,8 @@ class _LoginCard extends StatelessWidget {
               color: c.surfaceElevated,
               shape: BoxShape.circle,
             ),
-            child: Icon(HugeIcons.strokeRoundedUser, color: c.textMuted, size: 26),
+            child:
+                Icon(HugeIcons.strokeRoundedUser, color: c.textMuted, size: 26),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -304,7 +351,8 @@ class _LoginCard extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           GestureDetector(
-            onTap: () => Get.to(() => const LoginScreen(), transition: Transition.cupertino),
+            onTap: () => Get.to(() => const LoginScreen(),
+                transition: Transition.cupertino),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(

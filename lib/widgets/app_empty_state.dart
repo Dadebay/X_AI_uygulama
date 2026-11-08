@@ -53,7 +53,8 @@ class AppEmptyState extends StatelessWidget {
               const SizedBox(height: 20),
               TextButton.icon(
                 onPressed: onRetry,
-                icon: Icon(HugeIcons.strokeRoundedRefresh, color: const Color(0xff22B241)),
+                icon: const Icon(HugeIcons.strokeRoundedRefresh,
+                    color: Color(0xff22B241)),
                 label: const Text(
                   'Täzele',
                   style: TextStyle(
@@ -69,4 +70,3 @@ class AppEmptyState extends StatelessWidget {
     );
   }
 }
-

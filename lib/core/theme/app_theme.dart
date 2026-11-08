@@ -42,8 +42,10 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textMuted,
-        selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
-        unselectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Gilroy'),
+        selectedLabelStyle: TextStyle(
+            fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
+        unselectedLabelStyle: TextStyle(
+            fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Gilroy'),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
@@ -52,24 +54,34 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           minimumSize: const Size(0, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.divider)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1)),
-        hintStyle: const TextStyle(color: AppColors.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.divider)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1)),
+        hintStyle: const TextStyle(
+            color: AppColors.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
       ),
       cardTheme: CardThemeData(
         color: AppColors.card,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.divider, thickness: 1, space: 0),
+      dividerTheme: const DividerThemeData(
+          color: AppColors.divider, thickness: 1, space: 0),
     );
   }
 
@@ -110,8 +122,10 @@ class AppTheme {
         backgroundColor: AppColors.lightSurface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.lightTextMuted,
-        selectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
-        unselectedLabelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Gilroy'),
+        selectedLabelStyle: TextStyle(
+            fontSize: 10, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
+        unselectedLabelStyle: TextStyle(
+            fontSize: 10, fontWeight: FontWeight.w500, fontFamily: 'Gilroy'),
         type: BottomNavigationBarType.fixed,
         elevation: 0,
       ),
@@ -120,24 +134,36 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: AppColors.white,
           minimumSize: const Size(0, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w600, fontFamily: 'Gilroy'),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.lightSurface,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.lightDivider)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1)),
-        hintStyle: const TextStyle(color: AppColors.lightTextMuted, fontSize: 14, fontFamily: 'Gilroy'),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.lightDivider)),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1)),
+        hintStyle: const TextStyle(
+            color: AppColors.lightTextMuted,
+            fontSize: 14,
+            fontFamily: 'Gilroy'),
       ),
       cardTheme: CardThemeData(
         color: AppColors.lightCard,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.lightDivider, thickness: 1, space: 0),
+      dividerTheme: const DividerThemeData(
+          color: AppColors.lightDivider, thickness: 1, space: 0),
     );
   }
 }

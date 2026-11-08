@@ -9,7 +9,12 @@ class SettingsRow extends StatelessWidget {
   final String? trailing;
   final VoidCallback onTap;
 
-  const SettingsRow({super.key, required this.icon, required this.label, this.trailing, required this.onTap});
+  const SettingsRow(
+      {super.key,
+      required this.icon,
+      required this.label,
+      this.trailing,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +27,19 @@ class SettingsRow extends StatelessWidget {
           children: [
             Icon(icon, color: c.textSecondary, size: 22),
             const SizedBox(width: 14),
-            Expanded(child: Text(label, style: TextStyle(color: c.textPrimary, fontSize: 15, fontFamily: 'Gilroy'))),
-            if (trailing != null) Text(trailing!, style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy')),
+            Expanded(
+                child: Text(label,
+                    style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 15,
+                        fontFamily: 'Gilroy'))),
+            if (trailing != null)
+              Text(trailing!,
+                  style: TextStyle(
+                      color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy')),
             const SizedBox(width: 4),
-            Icon(HugeIcons.strokeRoundedArrowRight01, color: c.textMuted, size: 20),
+            Icon(HugeIcons.strokeRoundedArrowRight01,
+                color: c.textMuted, size: 20),
           ],
         ),
       ),
@@ -38,7 +52,11 @@ class ToggleRow extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const ToggleRow({super.key, required this.label, required this.value, required this.onChanged});
+  const ToggleRow(
+      {super.key,
+      required this.label,
+      required this.value,
+      required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +65,16 @@ class ToggleRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: TextStyle(color: c.textPrimary, fontSize: 15, fontFamily: 'Gilroy'))),
-          Switch(value: value, onChanged: onChanged, activeColor: AppColors.primary),
+          Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 15,
+                      fontFamily: 'Gilroy'))),
+          Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: AppColors.primary),
         ],
       ),
     );

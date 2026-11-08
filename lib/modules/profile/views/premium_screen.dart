@@ -40,14 +40,20 @@ class _PremiumScreenState extends State<PremiumScreen> {
                     icon: Container(
                       width: 36,
                       height: 36,
-                      decoration: BoxDecoration(color: c.surfaceElevated, shape: BoxShape.circle),
-                      child: Icon(Icons.arrow_back_ios_new_rounded, color: c.textPrimary, size: 16),
+                      decoration: BoxDecoration(
+                          color: c.surfaceElevated, shape: BoxShape.circle),
+                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                          color: c.textPrimary, size: 16),
                     ),
                   ),
                   Expanded(
                     child: Center(
                       child: Text('Premium',
-                          style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Gilroy')),
+                          style: TextStyle(
+                              color: c.textPrimary,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              fontFamily: 'Gilroy')),
                     ),
                   ),
                   const SizedBox(width: 48),
@@ -65,18 +71,30 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A2000),
                         shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.35), width: 1.5),
+                        border: Border.all(
+                            color:
+                                const Color(0xFFFFD700).withValues(alpha: 0.35),
+                            width: 1.5),
                       ),
-                      child: const Center(child: Text('👑', style: TextStyle(fontSize: 34))),
+                      child: const Center(
+                          child: Text('👑', style: TextStyle(fontSize: 34))),
                     ),
                     const SizedBox(height: 14),
                     Text('Pulse Premium',
-                        style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w900, fontSize: 24, fontFamily: 'Gilroy')),
+                        style: TextStyle(
+                            color: c.textPrimary,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 24,
+                            fontFamily: 'Gilroy')),
                     const SizedBox(height: 8),
                     Text(
                       'Reklamsız deneyim, gelişmiş AI özellikleri\nve daha fazlası.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy', height: 1.5),
+                      style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 13,
+                          fontFamily: 'Gilroy',
+                          height: 1.5),
                     ),
                     const SizedBox(height: 28),
                     Container(
@@ -89,13 +107,21 @@ class _PremiumScreenState extends State<PremiumScreen> {
                       child: Column(
                         children: _features
                             .map((f) => Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 6),
                                   child: Row(
                                     children: [
-                                      Icon(HugeIcons.strokeRoundedCheckmarkCircle02, color: AppColors.primary, size: 18),
+                                      const Icon(
+                                          HugeIcons
+                                              .strokeRoundedCheckmarkCircle02,
+                                          color: AppColors.primary,
+                                          size: 18),
                                       const SizedBox(width: 12),
                                       Text(f['text']!,
-                                          style: TextStyle(color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy')),
+                                          style: TextStyle(
+                                              color: c.textPrimary,
+                                              fontSize: 14,
+                                              fontFamily: 'Gilroy')),
                                     ],
                                   ),
                                 ))
@@ -135,10 +161,14 @@ class _PremiumScreenState extends State<PremiumScreen> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14)),
                         ),
                         child: const Text("Premium'u Başlat",
-                            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, fontFamily: 'Gilroy')),
+                            style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                                fontFamily: 'Gilroy')),
                       ),
                     ),
                     const SizedBox(height: 14),

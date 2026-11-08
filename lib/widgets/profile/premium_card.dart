@@ -8,7 +8,8 @@ class PremiumCard extends StatelessWidget {
   final bool yearlySelected;
   final ValueChanged<bool> onToggle;
 
-  const PremiumCard({super.key, required this.yearlySelected, required this.onToggle});
+  const PremiumCard(
+      {super.key, required this.yearlySelected, required this.onToggle});
 
   static const List<String> _features = [
     'Reklamsız kullanım',
@@ -37,28 +38,48 @@ class PremiumCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF2A2000),
               shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
             ),
-            child: const Center(child: Text('👑', style: TextStyle(fontSize: 26))),
+            child:
+                const Center(child: Text('👑', style: TextStyle(fontSize: 26))),
           ),
           const SizedBox(height: 12),
           Text('Pulse Premium',
-              style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Gilroy')),
+              style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  fontFamily: 'Gilroy')),
           const SizedBox(height: 16),
           ..._features.map((f) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
-                    Icon(HugeIcons.strokeRoundedCheckmarkCircle02, color: AppColors.primary, size: 18),
+                    const Icon(HugeIcons.strokeRoundedCheckmarkCircle02,
+                        color: AppColors.primary, size: 18),
                     const SizedBox(width: 10),
-                    Text(f, style: TextStyle(color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy')),
+                    Text(f,
+                        style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 14,
+                            fontFamily: 'Gilroy')),
                   ],
                 ),
               )),
           const SizedBox(height: 20),
-          PriceOption(label: 'Aylık', price: '₺49,99', selected: !yearlySelected, onTap: () => onToggle(false)),
+          PriceOption(
+              label: 'Aylık',
+              price: '₺49,99',
+              selected: !yearlySelected,
+              onTap: () => onToggle(false)),
           const SizedBox(height: 10),
-          PriceOption(label: 'Yıllık', price: '₺399,99', discount: '%33 indirim!', selected: yearlySelected, onTap: () => onToggle(true)),
+          PriceOption(
+              label: 'Yıllık',
+              price: '₺399,99',
+              discount: '%33 indirim!',
+              selected: yearlySelected,
+              onTap: () => onToggle(true)),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -68,16 +89,21 @@ class PremiumCard extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text("Premium'u Başlat",
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Gilroy')),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      fontFamily: 'Gilroy')),
             ),
           ),
           const SizedBox(height: 8),
           Text('Tüm abonelik koşulları ve gizlilik politikası',
               textAlign: TextAlign.center,
-              style: TextStyle(color: c.textMuted, fontSize: 11, fontFamily: 'Gilroy')),
+              style: TextStyle(
+                  color: c.textMuted, fontSize: 11, fontFamily: 'Gilroy')),
         ],
       ),
     );
@@ -97,17 +123,26 @@ class PremiumCard extends StatelessWidget {
               const Text('👑', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 12),
               Text('Pulse Premium',
-                  style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w900, fontSize: 20, fontFamily: 'Gilroy')),
+                  style: TextStyle(
+                      color: c.textPrimary,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                      fontFamily: 'Gilroy')),
               const SizedBox(height: 8),
               Text(
                 yearlySelected ? 'Yıllık ₺399,99 / yıl' : 'Aylık ₺49,99 / ay',
-                style: const TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Gilroy'),
+                style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Gilroy'),
               ),
               const SizedBox(height: 10),
               Text(
                 'Aboneliğiniz başlatılıyor. Ödeme tamamlandıktan sonra tüm premium özellikler aktif olacaktır.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy'),
+                style: TextStyle(
+                    color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy'),
               ),
               const SizedBox(height: 20),
               Row(
@@ -118,10 +153,14 @@ class PremiumCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: c.textSecondary,
                         side: BorderSide(color: c.divider),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('İptal', style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+                      child: const Text('İptal',
+                          style: TextStyle(
+                              fontFamily: 'Gilroy',
+                              fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -140,10 +179,14 @@ class PremiumCard extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text('Onayla', style: TextStyle(fontFamily: 'Gilroy', fontWeight: FontWeight.w700)),
+                      child: const Text('Onayla',
+                          style: TextStyle(
+                              fontFamily: 'Gilroy',
+                              fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ],
@@ -183,7 +226,9 @@ class PriceOption extends StatelessWidget {
         decoration: BoxDecoration(
           color: selected ? AppColors.lightPrimary : c.surfaceElevated,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? AppColors.primary : c.divider, width: selected ? 1.5 : 0.5),
+          border: Border.all(
+              color: selected ? AppColors.primary : c.divider,
+              width: selected ? 1.5 : 0.5),
         ),
         child: Row(
           children: [
@@ -192,14 +237,17 @@ class PriceOption extends StatelessWidget {
               height: 20,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: selected ? AppColors.primary : c.textMuted, width: 2),
+                border: Border.all(
+                    color: selected ? AppColors.primary : c.textMuted,
+                    width: 2),
               ),
               child: selected
                   ? Center(
                       child: Container(
                         width: 10,
                         height: 10,
-                        decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                        decoration: const BoxDecoration(
+                            color: AppColors.primary, shape: BoxShape.circle),
                       ),
                     )
                   : null,
@@ -217,10 +265,17 @@ class PriceOption extends StatelessWidget {
                   if (discount != null) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(6)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(6)),
                       child: Text(discount!,
-                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, fontFamily: 'Gilroy')),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'Gilroy')),
                     ),
                   ],
                 ],

@@ -21,7 +21,8 @@ class FullScreenImageViewer extends StatefulWidget {
 class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
   late PageController _pageController;
   late int _currentIndex;
-  final TransformationController _transformationController = TransformationController();
+  final TransformationController _transformationController =
+      TransformationController();
   TapDownDetails? _doubleTapDetails;
   bool _isZoomed = false;
 
@@ -47,8 +48,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
       } else {
         final position = _doubleTapDetails!.localPosition;
         _transformationController.value = Matrix4.identity()
-          ..translate(-position.dx * 1.5, -position.dy * 1.5)
-          ..scale(2.5);
+          ..translateByDouble(-position.dx * 1.5, -position.dy * 1.5, 0, 1)
+          ..scaleByDouble(2.5, 2.5, 1, 1);
         _isZoomed = true;
       }
     });
@@ -64,7 +65,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
           PageView.builder(
             controller: _pageController,
             itemCount: widget.images.length,
-            physics: _isZoomed ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            physics: _isZoomed
+                ? const NeverScrollableScrollPhysics()
+                : const BouncingScrollPhysics(),
             onPageChanged: (index) {
               setState(() {
                 _currentIndex = index;
@@ -87,7 +90,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                       // Optionally handle start
                     },
                     onInteractionUpdate: (details) {
-                      if (_transformationController.value.getMaxScaleOnAxis() > 1.0) {
+                      if (_transformationController.value.getMaxScaleOnAxis() >
+                          1.0) {
                         if (!_isZoomed) {
                           setState(() {
                             _isZoomed = true;
@@ -102,7 +106,8 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                       }
                     },
                     onInteractionEnd: (details) {
-                      if (_transformationController.value.getMaxScaleOnAxis() <= 1.0) {
+                      if (_transformationController.value.getMaxScaleOnAxis() <=
+                          1.0) {
                         setState(() {
                           _isZoomed = false;
                           _transformationController.value = Matrix4.identity();
@@ -118,11 +123,17 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                           : Image.network(
                               imageUrl,
                               fit: BoxFit.contain,
-                              loadingBuilder: (context, child, loadingProgress) {
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Center(
                                   child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null,
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress
+                                                .cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
                                     color: const Color(0xff22B241),
                                   ),
                                 );
@@ -200,7 +211,9 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                     margin: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _currentIndex == index ? const Color(0xff22B241) : Colors.white.withOpacity(0.3),
+                      color: _currentIndex == index
+                          ? const Color(0xff22B241)
+                          : Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
                 ),
@@ -211,13 +224,14 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required VoidCallback onTap}) {
+  Widget _buildActionButton(
+      {required IconData icon, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.4),
+          color: Colors.black.withValues(alpha: 0.4),
           shape: BoxShape.circle,
         ),
         child: HugeIcon(

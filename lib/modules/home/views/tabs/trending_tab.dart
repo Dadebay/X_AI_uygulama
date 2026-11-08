@@ -25,7 +25,11 @@ class TrendingTab extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Text('popular_agendas'.tr,
-                    style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 18, fontFamily: 'Gilroy')),
+                    style: TextStyle(
+                        color: c.textPrimary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 18,
+                        fontFamily: 'Gilroy')),
               ),
               if (ctrl.trendTopics.isNotEmpty)
                 Padding(

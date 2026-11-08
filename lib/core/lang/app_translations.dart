@@ -127,7 +127,8 @@ class AppTranslations extends Translations {
     // About / splash
     'app_tagline': 'AI Destekli X Feed',
     'app_version': 'Sürüm 1.0.0',
-    'app_description': 'Pulse, yapay zeka destekli haber ve içerik platformudur.',
+    'app_description':
+        'Pulse, yapay zeka destekli haber ve içerik platformudur.',
     'last_updated': 'Son güncelleme',
 
     // Common
@@ -149,14 +150,16 @@ class AppTranslations extends Translations {
     'notif_empty_title': 'Bildirim yok',
     'notif_empty_sub': 'Yeni bildirimler burada görünecek.',
     'saved_login_title': 'Tweetleri kaydet,\nnerede olursan ol ulaş',
-    'saved_login_sub': 'Kaydedilen tweetlerine tüm cihazlarından ulaşmak için giriş yap.',
+    'saved_login_sub':
+        'Kaydedilen tweetlerine tüm cihazlarından ulaşmak için giriş yap.',
     'saved_login_cta_title': 'Henüz kaydedilen tweet yok',
     'saved_login_cta_sub': 'Beğendiğin tweetleri kaydetmek için giriş yap.',
     'saved_feature_1': 'Tweetleri tek tıkla kaydet',
     'saved_feature_2': 'Tüm cihazlarında senkronize',
     'saved_feature_3': 'İstediğin zaman eriş',
     'saved_empty_title': 'Henüz kaydedilen tweet yok',
-    'saved_empty_sub': 'Bir tweet\'in üzerindeki 🔖 ikonuna bas\nve burada görünsün.',
+    'saved_empty_sub':
+        'Bir tweet\'in üzerindeki 🔖 ikonuna bas\nve burada görünsün.',
     'sign_in': 'Giriş Yap',
     'sign_in_google': 'Google ile devam et',
     'sign_in_apple': 'Apple ile devam et',
@@ -165,7 +168,8 @@ class AppTranslations extends Translations {
     // 'cancel': 'İptal',
     'profile_login_title': 'Hesabına giriş yap',
     'profile_login_sub': 'Tweetleri kaydet ve tüm cihazlarında eriş.',
-    'login_privacy_note': 'Giriş yaparak Kullanım Şartları ve Gizlilik Politikası\'nı kabul etmiş olursunuz.',
+    'login_privacy_note':
+        'Giriş yaparak Kullanım Şartları ve Gizlilik Politikası\'nı kabul etmiş olursunuz.',
     'post_detail': 'Gönderi',
     'about_us': 'Hakkımızda',
     'about': 'Hakkında',
@@ -312,7 +316,8 @@ class AppTranslations extends Translations {
     'notif_empty_title': 'No notifications',
     'notif_empty_sub': 'New notifications will appear here.',
     'saved_login_title': 'Save tweets,\naccess them anywhere',
-    'saved_login_sub': 'Sign in to access your saved tweets across all devices.',
+    'saved_login_sub':
+        'Sign in to access your saved tweets across all devices.',
     'saved_login_cta_title': 'No saved tweets yet',
     'saved_login_cta_sub': 'Sign in to start saving tweets.',
     'saved_feature_1': 'Save tweets with one tap',
@@ -328,7 +333,8 @@ class AppTranslations extends Translations {
     // 'cancel': 'Cancel',
     'profile_login_title': 'Sign in to your account',
     'profile_login_sub': 'Save tweets and access them on all your devices.',
-    'login_privacy_note': 'By signing in, you agree to our Terms of Service and Privacy Policy.',
+    'login_privacy_note':
+        'By signing in, you agree to our Terms of Service and Privacy Policy.',
     'post_detail': 'Post',
     'about_us': 'About Us',
     'about': 'About',
@@ -453,7 +459,8 @@ class AppTranslations extends Translations {
     // About / splash
     'app_tagline': 'X-лента на базе AI',
     'app_version': 'Версия 1.0.0',
-    'app_description': 'Pulse — новостная платформа на базе искусственного интеллекта.',
+    'app_description':
+        'Pulse — новостная платформа на базе искусственного интеллекта.',
     'last_updated': 'Последнее обновление',
 
     // Common
@@ -475,7 +482,8 @@ class AppTranslations extends Translations {
     'notif_empty_title': 'Нет уведомлений',
     'notif_empty_sub': 'Новые уведомления появятся здесь.',
     'saved_login_title': 'Сохраняй твиты,\nоткрывай где угодно',
-    'saved_login_sub': 'Войдите, чтобы получить доступ к сохранённым твитам на всех устройствах.',
+    'saved_login_sub':
+        'Войдите, чтобы получить доступ к сохранённым твитам на всех устройствах.',
     'saved_login_cta_title': 'Нет сохранённых твитов',
     'saved_login_cta_sub': 'Войдите, чтобы начать сохранять твиты.',
     'saved_feature_1': 'Сохраняй твиты одним нажатием',
@@ -489,8 +497,10 @@ class AppTranslations extends Translations {
     'sign_out': 'Выйти',
     'sign_out_confirm': 'Вы уверены, что хотите выйти?',
     'profile_login_title': 'Войдите в аккаунт',
-    'profile_login_sub': 'Сохраняйте твиты и получайте доступ на всех устройствах.',
-    'login_privacy_note': 'Входя в систему, вы принимаете Условия использования и Политику конфиденциальности.',
+    'profile_login_sub':
+        'Сохраняйте твиты и получайте доступ на всех устройствах.',
+    'login_privacy_note':
+        'Входя в систему, вы принимаете Условия использования и Политику конфиденциальности.',
     'post_detail': 'Пост',
     'about_us': 'О нас',
     'about': 'О приложении',

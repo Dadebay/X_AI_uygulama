@@ -23,7 +23,8 @@ class LoginScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.bolt_rounded, color: AppColors.primary, size: 36),
+                  const Icon(Icons.bolt_rounded,
+                      color: AppColors.primary, size: 36),
                   const SizedBox(width: 8),
                   Text(
                     'Pulse',
@@ -61,11 +62,18 @@ class LoginScreen extends StatelessWidget {
               ),
               const Spacer(flex: 2),
               // Özellikler
-              _FeatureRow(c: c, icon: Icons.bookmark_rounded, text: 'saved_feature_1'.tr),
+              _FeatureRow(
+                  c: c,
+                  icon: Icons.bookmark_rounded,
+                  text: 'saved_feature_1'.tr),
               const SizedBox(height: 12),
-              _FeatureRow(c: c, icon: Icons.devices_rounded, text: 'saved_feature_2'.tr),
+              _FeatureRow(
+                  c: c,
+                  icon: Icons.devices_rounded,
+                  text: 'saved_feature_2'.tr),
               const SizedBox(height: 12),
-              _FeatureRow(c: c, icon: Icons.sync_rounded, text: 'saved_feature_3'.tr),
+              _FeatureRow(
+                  c: c, icon: Icons.sync_rounded, text: 'saved_feature_3'.tr),
               const Spacer(flex: 3),
               // Google butonu
               Obx(() => _AuthButton(
@@ -80,7 +88,8 @@ class LoginScreen extends StatelessWidget {
                           'assets/icons/google_logo.png',
                           width: 20,
                           height: 20,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.g_mobiledata_rounded, size: 24),
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.g_mobiledata_rounded, size: 24),
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -105,7 +114,8 @@ class LoginScreen extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.apple_rounded, color: c.textPrimary, size: 22),
+                          Icon(Icons.apple_rounded,
+                              color: c.textPrimary, size: 22),
                           const SizedBox(width: 12),
                           Text(
                             'sign_in_apple'.tr,
@@ -131,7 +141,10 @@ class LoginScreen extends StatelessWidget {
                   ),
                   child: Text(
                     ctrl.errorMsg.value,
-                    style: const TextStyle(color: AppColors.red, fontSize: 13, fontFamily: 'Gilroy'),
+                    style: const TextStyle(
+                        color: AppColors.red,
+                        fontSize: 13,
+                        fontFamily: 'Gilroy'),
                     textAlign: TextAlign.center,
                   ),
                 );
@@ -140,7 +153,11 @@ class LoginScreen extends StatelessWidget {
               Text(
                 'login_privacy_note'.tr,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: c.textMuted, fontSize: 11, fontFamily: 'Gilroy', height: 1.4),
+                style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 11,
+                    fontFamily: 'Gilroy',
+                    height: 1.4),
               ),
               const SizedBox(height: 24),
             ],

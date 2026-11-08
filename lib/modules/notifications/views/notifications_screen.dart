@@ -53,7 +53,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             elevation: 0,
             toolbarHeight: 56,
             leading: IconButton(
-              icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 24),
+              icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+                  color: c.textPrimary, size: 24),
               onPressed: () => Get.back(),
             ),
             titleSpacing: 0,
@@ -71,7 +72,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 if (unread > 0) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.lightPrimary,
                       borderRadius: BorderRadius.circular(20),
@@ -166,7 +168,8 @@ class _NotifCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = Tc.of(context);
     final bool read = item['read'] == true;
-    final String timeStr = item['time'] is String ? formatTime(item['time'] as String) : '';
+    final String timeStr =
+        item['time'] is String ? formatTime(item['time'] as String) : '';
     final String title = (item['title'] as String?) ?? '';
     final String body = (item['body'] as String?) ?? '';
 
@@ -182,7 +185,8 @@ class _NotifCard extends StatelessWidget {
           color: AppColors.red.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Icon(HugeIcons.strokeRoundedDelete02, color: AppColors.red, size: 20),
+        child: const Icon(HugeIcons.strokeRoundedDelete02,
+            color: AppColors.red, size: 20),
       ),
       child: GestureDetector(
         onTap: onTap,
@@ -193,7 +197,8 @@ class _NotifCard extends StatelessWidget {
             color: c.card,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: read ? c.divider : AppColors.primary.withValues(alpha: 0.45),
+              color:
+                  read ? c.divider : AppColors.primary.withValues(alpha: 0.45),
               width: 0.5,
             ),
           ),
@@ -252,7 +257,8 @@ class _NotifCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        Icon(HugeIcons.strokeRoundedClock01, color: c.textMuted, size: 12),
+                        Icon(HugeIcons.strokeRoundedClock01,
+                            color: c.textMuted, size: 12),
                         const SizedBox(width: 4),
                         Text(
                           timeStr,
@@ -307,7 +313,8 @@ class _EmptyState extends StatelessWidget {
           CircleAvatar(
             radius: 36,
             backgroundColor: c.surfaceElevated,
-            child: Icon(HugeIcons.strokeRoundedNotificationOff01, size: 32, color: c.textMuted),
+            child: Icon(HugeIcons.strokeRoundedNotificationOff01,
+                size: 32, color: c.textMuted),
           ),
           const SizedBox(height: 16),
           Text(
@@ -323,7 +330,11 @@ class _EmptyState extends StatelessWidget {
           Text(
             'notif_empty_sub'.tr,
             textAlign: TextAlign.center,
-            style: TextStyle(color: c.textMuted, fontFamily: 'Gilroy', fontSize: 13, height: 1.4),
+            style: TextStyle(
+                color: c.textMuted,
+                fontFamily: 'Gilroy',
+                fontSize: 13,
+                height: 1.4),
           ),
         ],
       ),
@@ -350,7 +361,8 @@ class _NotifDetailScreen extends StatelessWidget {
     final c = Tc.of(context);
     final String title = (item['title'] as String?) ?? '';
     final String body = (item['body'] as String?) ?? '';
-    final String timeStr = item['time'] is String ? _fullTime(item['time'] as String) : '';
+    final String timeStr =
+        item['time'] is String ? _fullTime(item['time'] as String) : '';
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -360,7 +372,8 @@ class _NotifDetailScreen extends StatelessWidget {
         elevation: 0,
         toolbarHeight: 56,
         leading: IconButton(
-          icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 24),
+          icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+              color: c.textPrimary, size: 24),
           onPressed: () => Get.back(),
         ),
         titleSpacing: 0,
@@ -404,7 +417,8 @@ class _NotifDetailScreen extends StatelessWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          Icon(HugeIcons.strokeRoundedClock01, color: c.textMuted, size: 13),
+                          Icon(HugeIcons.strokeRoundedClock01,
+                              color: c.textMuted, size: 13),
                           const SizedBox(width: 5),
                           Flexible(
                             child: Text(

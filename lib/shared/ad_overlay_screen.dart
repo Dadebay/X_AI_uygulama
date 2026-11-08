@@ -18,7 +18,8 @@ class AdOverlayScreen extends StatefulWidget {
   State<AdOverlayScreen> createState() => _AdOverlayScreenState();
 }
 
-class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProviderStateMixin {
+class _AdOverlayScreenState extends State<AdOverlayScreen>
+    with SingleTickerProviderStateMixin {
   static const int _totalSeconds = 3;
   int _remaining = _totalSeconds;
   Timer? _timer;
@@ -56,7 +57,9 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
   Future<void> _handleSkip() async {
     if (_canSkip) {
       Get.back();
-      final uri = Uri.parse(widget.targetUrl.startsWith('http') ? widget.targetUrl : 'https://${widget.targetUrl}');
+      final uri = Uri.parse(widget.targetUrl.startsWith('http')
+          ? widget.targetUrl
+          : 'https://${widget.targetUrl}');
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (_) {}
@@ -83,9 +86,10 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
+                        color: Colors.white.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
@@ -159,8 +163,10 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 28, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         child: const Text(
                           'Şimdi Keşfet',
@@ -200,7 +206,7 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
             right: 0,
             bottom: 0,
             child: Container(
-              color: Colors.black.withOpacity(0.85),
+              color: Colors.black.withValues(alpha: 0.85),
               padding: EdgeInsets.only(
                 left: 16,
                 right: 16,
@@ -214,9 +220,12 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                   GestureDetector(
                     onTap: _handleSkip,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: _canSkip ? AppColors.primary.withOpacity(0.15) : Colors.white.withOpacity(0.08),
+                        color: _canSkip
+                            ? AppColors.primary.withValues(alpha: 0.15)
+                            : Colors.white.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: _canSkip ? AppColors.primary : Colors.white24,
@@ -228,7 +237,8 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                           Text(
                             'Reklamı Geç',
                             style: TextStyle(
-                              color: _canSkip ? AppColors.primary : Colors.white54,
+                              color:
+                                  _canSkip ? AppColors.primary : Colors.white54,
                               fontFamily: 'Gilroy',
                               fontWeight: FontWeight.w700,
                               fontSize: 13,
@@ -238,7 +248,8 @@ class _AdOverlayScreenState extends State<AdOverlayScreen> with SingleTickerProv
                           Icon(
                             Icons.close_rounded,
                             size: 14,
-                            color: _canSkip ? AppColors.primary : Colors.white38,
+                            color:
+                                _canSkip ? AppColors.primary : Colors.white38,
                           ),
                         ],
                       ),
@@ -297,7 +308,7 @@ class _CountdownCircle extends StatelessWidget {
             value: progress,
             strokeWidth: 2.5,
             backgroundColor: Colors.white24,
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
           ),
           Text(
             '$remaining',

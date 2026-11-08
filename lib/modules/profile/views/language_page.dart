@@ -34,17 +34,17 @@ class LanguagePage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Column(
+      body: const Column(
         children: [
-          const SizedBox(height: 20),
-          const LanguageSelectionTile(
+          SizedBox(height: 20),
+          LanguageSelectionTile(
             title: 'Türkmen dili',
             iconPath: 'assets/icons/tmflag.svg',
             code: 'tk',
             goBack: true,
           ),
-          const SizedBox(height: 12),
-          const LanguageSelectionTile(
+          SizedBox(height: 12),
+          LanguageSelectionTile(
             title: 'Rus dili',
             iconPath: 'assets/icons/ruflag.svg',
             code: 'ru',
