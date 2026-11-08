@@ -35,7 +35,8 @@ class AppErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(HugeIcons.strokeRoundedWifiOff01, color: Colors.grey, size: 48),
+            const Icon(HugeIcons.strokeRoundedWifiOff01,
+                color: Colors.grey, size: 48),
             const SizedBox(height: 16),
             Text(
               message,
@@ -46,7 +47,7 @@ class AppErrorState extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: onRetry,
-                icon: Icon(HugeIcons.strokeRoundedRefresh),
+                icon: const Icon(HugeIcons.strokeRoundedRefresh),
                 label: const Text('Täzele'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xff22B241),
@@ -62,4 +63,3 @@ class AppErrorState extends StatelessWidget {
     );
   }
 }
-

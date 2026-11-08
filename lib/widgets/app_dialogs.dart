@@ -33,7 +33,7 @@ class AppDialogs {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -47,7 +47,7 @@ class AppDialogs {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.15),
+                    color: iconColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(icon, color: iconColor, size: 20),
@@ -113,7 +113,7 @@ class AppDialogs {
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4CAF7D).withOpacity(0.35),
+                color: const Color(0xFF4CAF7D).withValues(alpha: 0.35),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
               ),
@@ -127,7 +127,7 @@ class AppDialogs {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.22),
+                    color: Colors.white.withValues(alpha: 0.22),
                     borderRadius: BorderRadius.circular(11),
                   ),
                   child: Icon(icon, color: Colors.white, size: 21),
@@ -151,7 +151,7 @@ class AppDialogs {
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.95),
+                          color: Colors.white.withValues(alpha: 0.95),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           fontFamily: 'Gilroy',

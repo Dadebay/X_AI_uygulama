@@ -16,7 +16,12 @@ class SectionHeader extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
         child: Text(
           title,
-          style: TextStyle(color: c.textMuted, fontSize: 12, fontWeight: FontWeight.w700, fontFamily: 'Gilroy', letterSpacing: 0.5),
+          style: TextStyle(
+              color: c.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Gilroy',
+              letterSpacing: 0.5),
         ),
       );
     }
@@ -25,10 +30,20 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 16, fontFamily: 'Gilroy')),
+          Text(title,
+              style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  fontFamily: 'Gilroy')),
           GestureDetector(
             onTap: onAction,
-            child: Text(action!, style: const TextStyle(color: Color(0xFF22B241), fontSize: 13, fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+            child: Text(action!,
+                style: const TextStyle(
+                    color: Color(0xFF22B241),
+                    fontSize: 13,
+                    fontFamily: 'Gilroy',
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ),

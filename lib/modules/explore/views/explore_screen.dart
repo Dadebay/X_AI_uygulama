@@ -8,6 +8,7 @@ import 'package:atlas/widgets/pulse/tweet_card.dart';
 import 'package:atlas/modules/explore/controllers/explore_controller.dart';
 import 'package:atlas/modules/explore/views/all_trends_screen.dart';
 import 'package:atlas/modules/explore/views/trend_detail_screen.dart';
+import 'package:atlas/widgets/pulse/feed_states.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -68,9 +69,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   controller: _searchCtrl,
                   onChanged: _ctrl.search,
                   style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 14,
-                      fontFamily: 'Gilroy'),
+                      color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy'),
                   decoration: InputDecoration(
                     hintText: 'search_hint'.tr,
                     hintStyle: TextStyle(
@@ -79,8 +78,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         color: c.textMuted, size: 20),
                     suffixIcon: Obx(() => _hasText.value
                         ? IconButton(
-                            icon: Icon(Icons.clear,
-                                color: c.textMuted, size: 18),
+                            icon:
+                                Icon(Icons.clear, color: c.textMuted, size: 18),
                             onPressed: () {
                               _searchCtrl.clear();
                               _ctrl.search('');
@@ -151,14 +150,19 @@ class _DefaultContent extends StatelessWidget {
             if (ctrl.isLoadingTrends.value) {
               return const _ShimmerList(count: 5, height: 56);
             }
+            if (ctrl.trendsError.value.isNotEmpty) {
+              return FeedErrorState(
+                message: ctrl.trendsError.value,
+                onRetry: ctrl.loadTrends,
+              );
+            }
             if (ctrl.trendTopics.isEmpty) {
               return const SizedBox.shrink();
             }
             return Column(
               mainAxisSize: MainAxisSize.min,
-              children: ctrl.trendTopics
-                  .map((t) => _TrendRow(topic: t))
-                  .toList(),
+              children:
+                  ctrl.trendTopics.map((t) => _TrendRow(topic: t)).toList(),
             );
           }),
 
@@ -178,13 +182,19 @@ class _DefaultContent extends StatelessWidget {
             if (ctrl.isLoadingPopular.value) {
               return const _ShimmerList(count: 3, height: 100);
             }
+            if (ctrl.popularError.value.isNotEmpty) {
+              return FeedErrorState(
+                message: ctrl.popularError.value,
+                onRetry: ctrl.loadPopularTweets,
+              );
+            }
             if (ctrl.popularTweets.isEmpty) {
               return Padding(
                 padding: const EdgeInsets.all(24),
                 child: Center(
                   child: Text('no_results'.tr,
-                      style: TextStyle(
-                          color: c.textMuted, fontFamily: 'Gilroy')),
+                      style:
+                          TextStyle(color: c.textMuted, fontFamily: 'Gilroy')),
                 ),
               );
             }
@@ -227,6 +237,14 @@ class _SearchResults extends StatelessWidget {
     return Obx(() {
       if (ctrl.isLoadingSearch.value) {
         return const _ShimmerList(count: 5, height: 100);
+      }
+      if (ctrl.searchError.value.isNotEmpty) {
+        return Center(
+          child: FeedErrorState(
+            message: ctrl.searchError.value,
+            onRetry: () => ctrl.search(ctrl.lastQuery, retry: true),
+          ),
+        );
       }
       if (ctrl.searchResults.isEmpty) {
         return Center(
@@ -273,13 +291,17 @@ class _TrendRow extends StatelessWidget {
   String get _category {
     final n = topic.name.toLowerCase();
     if (n.contains('galatasaray') || n.contains(' gs')) return 'Galatasaray';
-    if (n.contains('fenerbahçe') || n.contains('fenerbahce')) return 'Fenerbahçe';
+    if (n.contains('fenerbahçe') || n.contains('fenerbahce')) {
+      return 'Fenerbahçe';
+    }
     if (n.contains('beşiktaş') || n.contains('besiktas')) return 'Beşiktaş';
     if (n.contains('trabzon')) return 'Trabzonspor';
     if (n.contains('transfer')) return 'Transfer';
     if (n.contains('champions') || n.contains('ucl')) return 'UCL';
     if (n.contains('süper lig') || n.contains('superlig')) return 'Süper Lig';
-    if (n.contains('messi') || n.contains('ronaldo') || n.contains('mbappe')) return 'Dünya Futbolu';
+    if (n.contains('messi') || n.contains('ronaldo') || n.contains('mbappe')) {
+      return 'Dünya Futbolu';
+    }
     return 'Gündem';
   }
 

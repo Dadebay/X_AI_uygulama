@@ -16,11 +16,14 @@ class Tc {
 
   Color get bg => _dark ? AppColors.background : Colors.white;
   Color get surface => _dark ? AppColors.surface : AppColors.lightSurface;
-  Color get surfaceElevated => _dark ? AppColors.surfaceElevated : AppColors.lightSurfaceElevated;
+  Color get surfaceElevated =>
+      _dark ? AppColors.surfaceElevated : AppColors.lightSurfaceElevated;
   Color get card => _dark ? AppColors.card : AppColors.lightCard;
   Color get divider => _dark ? AppColors.divider : AppColors.lightDivider;
-  Color get textPrimary => _dark ? AppColors.textPrimary : AppColors.lightTextPrimary;
-  Color get textSecondary => _dark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+  Color get textPrimary =>
+      _dark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+  Color get textSecondary =>
+      _dark ? AppColors.textSecondary : AppColors.lightTextSecondary;
   Color get textMuted => _dark ? AppColors.textMuted : AppColors.lightTextMuted;
 
   // Static shortcuts — reads ThemeController observable (use inside Obx)
@@ -32,14 +35,21 @@ class Tc {
     }
   }
 
-  static Color get bg$ => _isDark ? AppColors.background : AppColors.lightBackground;
-  static Color get surface$ => _isDark ? AppColors.surface : AppColors.lightSurface;
-  static Color get surfaceElevated$ => _isDark ? AppColors.surfaceElevated : AppColors.lightSurfaceElevated;
+  static Color get bg$ =>
+      _isDark ? AppColors.background : AppColors.lightBackground;
+  static Color get surface$ =>
+      _isDark ? AppColors.surface : AppColors.lightSurface;
+  static Color get surfaceElevated$ =>
+      _isDark ? AppColors.surfaceElevated : AppColors.lightSurfaceElevated;
   static Color get card$ => _isDark ? AppColors.card : AppColors.lightCard;
-  static Color get divider$ => _isDark ? AppColors.divider : AppColors.lightDivider;
-  static Color get textPrimary$ => _isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
-  static Color get textSecondary$ => _isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
-  static Color get textMuted$ => _isDark ? AppColors.textMuted : AppColors.lightTextMuted;
+  static Color get divider$ =>
+      _isDark ? AppColors.divider : AppColors.lightDivider;
+  static Color get textPrimary$ =>
+      _isDark ? AppColors.textPrimary : AppColors.lightTextPrimary;
+  static Color get textSecondary$ =>
+      _isDark ? AppColors.textSecondary : AppColors.lightTextSecondary;
+  static Color get textMuted$ =>
+      _isDark ? AppColors.textMuted : AppColors.lightTextMuted;
 
   // Theme-independent
   static Color get primary => AppColors.primary;

@@ -5,7 +5,9 @@ import 'package:hugeicons/hugeicons.dart';
 
 String _friendlyError(String raw) {
   final r = raw.toLowerCase();
-  if (r.contains('socketexception') || r.contains('network') || r.contains('connection')) {
+  if (r.contains('socketexception') ||
+      r.contains('network') ||
+      r.contains('connection')) {
     return 'İnternet bağlantısı yok. Lütfen bağlantınızı kontrol edin.';
   }
   if (r.contains('timeout') || r.contains('timeoutexception')) {
@@ -20,7 +22,10 @@ String _friendlyError(String raw) {
   if (r.contains('429') || r.contains('rate limit') || r.contains('too many')) {
     return 'Çok fazla istek gönderildi. Lütfen bir süre bekleyip tekrar deneyin.';
   }
-  if (r.contains('500') || r.contains('502') || r.contains('503') || r.contains('server')) {
+  if (r.contains('500') ||
+      r.contains('502') ||
+      r.contains('503') ||
+      r.contains('server')) {
     return 'Sunucu şu an yanıt vermiyor. Lütfen daha sonra tekrar deneyin.';
   }
   if (r.contains('dioexception') || r.contains('dioerror')) {
@@ -39,7 +44,9 @@ class FeedEmptyState extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40),
       child: Center(
-        child: Text(message, style: TextStyle(color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy')),
+        child: Text(message,
+            style: TextStyle(
+                color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy')),
       ),
     );
   }
@@ -48,7 +55,8 @@ class FeedEmptyState extends StatelessWidget {
 class FeedErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const FeedErrorState({super.key, required this.message, required this.onRetry});
+  const FeedErrorState(
+      {super.key, required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -57,18 +65,34 @@ class FeedErrorState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
       child: Column(
         children: [
-          Icon(HugeIcons.strokeRoundedWifiNoSignal, color: c.textMuted, size: 36),
+          Icon(HugeIcons.strokeRoundedWifiNoSignal,
+              color: c.textMuted, size: 36),
           const SizedBox(height: 12),
-          Text('İçerik yüklenemedi', style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w700, fontSize: 15, fontFamily: 'Gilroy')),
+          Text('İçerik yüklenemedi',
+              style: TextStyle(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  fontFamily: 'Gilroy')),
           const SizedBox(height: 6),
-          Text(_friendlyError(message), style: TextStyle(color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy'), textAlign: TextAlign.center),
+          Text(_friendlyError(message),
+              style: TextStyle(
+                  color: c.textMuted, fontSize: 13, fontFamily: 'Gilroy'),
+              textAlign: TextAlign.center),
           const SizedBox(height: 20),
           GestureDetector(
             onTap: onRetry,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 11),
-              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
-              child: const Text('Tekrar Dene', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14, fontFamily: 'Gilroy')),
+              decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(10)),
+              child: const Text('Tekrar Dene',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      fontFamily: 'Gilroy')),
             ),
           ),
         ],
@@ -99,8 +123,17 @@ class FeedLoadMore extends StatelessWidget {
           ),
           child: Center(
             child: isLoading
-                ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-                : const Text('Daha Fazla Göster', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 14, fontFamily: 'Gilroy')),
+                ? const SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: AppColors.primary))
+                : const Text('Daha Fazla Göster',
+                    style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        fontFamily: 'Gilroy')),
           ),
         ),
       ),
@@ -110,5 +143,7 @@ class FeedLoadMore extends StatelessWidget {
 
 const Widget kFeedLoading = Padding(
   padding: EdgeInsets.symmetric(vertical: 40),
-  child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
+  child: Center(
+      child:
+          CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
 );

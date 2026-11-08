@@ -81,7 +81,8 @@ class _LoginPrompt extends StatelessWidget {
               ),
               const SizedBox(height: 28),
               GestureDetector(
-                onTap: () => Get.to(() => const LoginScreen(), transition: Transition.cupertino),
+                onTap: () => Get.to(() => const LoginScreen(),
+                    transition: Transition.cupertino),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 15),
@@ -150,7 +151,9 @@ class _SavedList extends StatelessWidget {
                           : null,
                       child: auth.photoUrl.isEmpty
                           ? Text(
-                              auth.displayName.isNotEmpty ? auth.displayName[0].toUpperCase() : '?',
+                              auth.displayName.isNotEmpty
+                                  ? auth.displayName[0].toUpperCase()
+                                  : '?',
                               style: TextStyle(
                                 color: c.textPrimary,
                                 fontWeight: FontWeight.w700,
@@ -167,7 +170,8 @@ class _SavedList extends StatelessWidget {
               child: Obx(() {
                 if (saved.isLoading.value) {
                   return const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                        color: AppColors.primary, strokeWidth: 2),
                   );
                 }
                 if (saved.savedTweets.isEmpty) {
@@ -208,23 +212,32 @@ class _SavedList extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         title: Text(
           auth.displayName.isNotEmpty ? auth.displayName : auth.email,
-          style: TextStyle(color: c.textPrimary, fontFamily: 'Gilroy', fontWeight: FontWeight.w700, fontSize: 16),
+          style: TextStyle(
+              color: c.textPrimary,
+              fontFamily: 'Gilroy',
+              fontWeight: FontWeight.w700,
+              fontSize: 16),
         ),
         content: Text(
           'sign_out_confirm'.tr,
-          style: TextStyle(color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 14),
+          style: TextStyle(
+              color: c.textSecondary, fontFamily: 'Gilroy', fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back(),
-            child: Text('cancel'.tr, style: const TextStyle(color: AppColors.primary, fontFamily: 'Gilroy')),
+            child: Text('cancel'.tr,
+                style: const TextStyle(
+                    color: AppColors.primary, fontFamily: 'Gilroy')),
           ),
           TextButton(
             onPressed: () {
               Get.back();
               auth.signOut();
             },
-            child: Text('sign_out'.tr, style: const TextStyle(color: AppColors.red, fontFamily: 'Gilroy')),
+            child: Text('sign_out'.tr,
+                style: const TextStyle(
+                    color: AppColors.red, fontFamily: 'Gilroy')),
           ),
         ],
       ),

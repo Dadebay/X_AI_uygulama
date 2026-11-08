@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 class NotificationStorageService {
-  static const _key = 'fcm_notifications';
+  String get _key =>
+      'fcm_notifications_${FirebaseAuth.instance.currentUser?.uid ?? 'guest'}';
   static const _maxCount = 50;
 
   final _box = Get.find<GetStorage>();

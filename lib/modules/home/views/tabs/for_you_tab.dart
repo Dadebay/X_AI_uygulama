@@ -45,19 +45,33 @@ class ForYouTab extends StatelessWidget {
                   children: [
                     const Text('🔥', style: TextStyle(fontSize: 16)),
                     const SizedBox(width: 6),
-                    Text('trending_header'.tr, style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w800, fontSize: 17, fontFamily: 'Gilroy')),
+                    Text('trending_header'.tr,
+                        style: TextStyle(
+                            color: c.textPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
+                            fontFamily: 'Gilroy')),
                     const Spacer(),
                     GestureDetector(
-                      onTap: () => DefaultTabController.of(context).animateTo(1),
-                      child: Text('see_all'.tr, style: const TextStyle(color: AppColors.primary, fontSize: 13, fontFamily: 'Gilroy', fontWeight: FontWeight.w600)),
+                      onTap: () =>
+                          DefaultTabController.of(context).animateTo(1),
+                      child: Text('see_all'.tr,
+                          style: const TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 13,
+                              fontFamily: 'Gilroy',
+                              fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
               ),
               if (ctrl.isLoadingFeed.value && ctrl.feedTweets.isEmpty)
                 kFeedLoading
-              else if (ctrl.feedError.value.isNotEmpty && ctrl.feedTweets.isEmpty)
-                FeedErrorState(message: ctrl.feedError.value, onRetry: () => ctrl.loadFeed(refresh: true))
+              else if (ctrl.feedError.value.isNotEmpty &&
+                  ctrl.feedTweets.isEmpty)
+                FeedErrorState(
+                    message: ctrl.feedError.value,
+                    onRetry: () => ctrl.loadFeed(refresh: true))
               else if (ctrl.feedTweets.isEmpty)
                 const FeedEmptyState()
               else ...[
@@ -77,7 +91,9 @@ class ForYouTab extends StatelessWidget {
                       media: t.media,
                     )),
                 if (ctrl.hasMoreFeed.value)
-                  FeedLoadMore(isLoading: ctrl.isLoadingFeed.value, onTap: () => ctrl.loadFeed()),
+                  FeedLoadMore(
+                      isLoading: ctrl.isLoadingFeed.value,
+                      onTap: () => ctrl.loadFeed()),
               ],
             ],
           ),

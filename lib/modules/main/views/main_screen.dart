@@ -54,10 +54,30 @@ class _PulseNavBar extends StatelessWidget {
             height: 60,
             child: Row(
               children: [
-                _NavItem(icon: HugeIcons.strokeRoundedHome01, label: 'nav_home'.tr, index: 0, current: idx, onTap: ctrl.changeIndex),
-                _NavItem(icon: HugeIcons.strokeRoundedCompass, label: 'nav_explore'.tr, index: 1, current: idx, onTap: ctrl.changeIndex),
-                _NavItem(icon: HugeIcons.strokeRoundedBookmark01, label: 'nav_saved'.tr, index: 2, current: idx, onTap: ctrl.changeIndex),
-                _NavItem(icon: HugeIcons.strokeRoundedUser, label: 'nav_profile'.tr, index: 3, current: idx, onTap: ctrl.changeIndex),
+                _NavItem(
+                    icon: HugeIcons.strokeRoundedHome01,
+                    label: 'nav_home'.tr,
+                    index: 0,
+                    current: idx,
+                    onTap: ctrl.changeIndex),
+                _NavItem(
+                    icon: HugeIcons.strokeRoundedCompass,
+                    label: 'nav_explore'.tr,
+                    index: 1,
+                    current: idx,
+                    onTap: ctrl.changeIndex),
+                _NavItem(
+                    icon: HugeIcons.strokeRoundedBookmark01,
+                    label: 'nav_saved'.tr,
+                    index: 2,
+                    current: idx,
+                    onTap: ctrl.changeIndex),
+                _NavItem(
+                    icon: HugeIcons.strokeRoundedUser,
+                    label: 'nav_profile'.tr,
+                    index: 3,
+                    current: idx,
+                    onTap: ctrl.changeIndex),
               ],
             ),
           ),
@@ -97,7 +117,9 @@ class _NavItem extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
               decoration: BoxDecoration(
-                color: selected ? AppColors.primary.withValues(alpha: 0.12) : Colors.transparent,
+                color: selected
+                    ? AppColors.primary.withValues(alpha: 0.12)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(

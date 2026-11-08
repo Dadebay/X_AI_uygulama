@@ -9,7 +9,8 @@ class FirestoreService {
 
   final _db = FirebaseFirestore.instance;
 
-  Future<Map<String, dynamic>?> getDocument(String collection, String docId) async {
+  Future<Map<String, dynamic>?> getDocument(
+      String collection, String docId) async {
     final snap = await _db.collection(collection).doc(docId).get();
     return snap.exists ? snap.data() : null;
   }
@@ -18,10 +19,7 @@ class FirestoreService {
   /// Her döküman yapısı:
   /// { id, name, shortName, logoUrl, followers, league, colors: ['#RRGGBB', ...] }
   Future<List<TeamModel>> getTeams() async {
-    final snap = await _db
-        .collection('teams')
-        .orderBy('order')
-        .get();
+    final snap = await _db.collection('teams').orderBy('order').get();
     return snap.docs.map((doc) {
       final d = doc.data();
       final rawColors = (d['colors'] as List<dynamic>?) ?? [];

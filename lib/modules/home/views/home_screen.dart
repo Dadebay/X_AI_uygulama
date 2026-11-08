@@ -165,8 +165,7 @@ class _HomeScreenState extends State<HomeScreen>
                   indicatorWeight: 3,
                   indicatorSize: TabBarIndicatorSize.label,
                   indicator: const UnderlineTabIndicator(
-                    borderSide:
-                        BorderSide(color: AppColors.primary, width: 3),
+                    borderSide: BorderSide(color: AppColors.primary, width: 3),
                     insets: EdgeInsets.symmetric(horizontal: 6),
                   ),
                   labelColor: AppColors.primary,
@@ -259,15 +258,11 @@ class _SearchBar extends StatelessWidget {
                 controller: ctrl,
                 focusNode: focus,
                 style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 14,
-                    fontFamily: 'Gilroy'),
+                    color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy'),
                 decoration: InputDecoration(
                   hintText: 'Ara...',
                   hintStyle: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 14,
-                      fontFamily: 'Gilroy'),
+                      color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
                   prefixIcon: Icon(HugeIcons.strokeRoundedSearch01,
                       color: c.textMuted, size: 18),
                   border: InputBorder.none,
@@ -334,9 +329,7 @@ class _SearchOverlay extends StatelessWidget {
                 Text(
                   '"$query" için sonuç bulunamadı',
                   style: TextStyle(
-                      color: c.textMuted,
-                      fontSize: 14,
-                      fontFamily: 'Gilroy'),
+                      color: c.textMuted, fontSize: 14, fontFamily: 'Gilroy'),
                   textAlign: TextAlign.center,
                 ),
               ],

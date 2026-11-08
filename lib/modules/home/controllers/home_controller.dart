@@ -10,7 +10,9 @@ class TeamFeedDef {
 }
 
 class HomeController extends GetxController {
-  final XquikService _xquik = XquikService();
+  HomeController({XquikService? xquik}) : _xquik = xquik ?? XquikService();
+
+  final XquikService _xquik;
 
   final feedTweets = <TweetModel>[].obs;
   final trendingTweets = <TweetModel>[].obs;
@@ -34,6 +36,9 @@ class HomeController extends GetxController {
   final isLoadingSearch = false.obs;
 
   String? _feedCursor;
+  String _feedCategory = '';
+  String? _feedCustomQuery;
+  int _feedGeneration = 0;
   final hasMoreFeed = true.obs;
 
   // Takım sekmesindeki seçili takım
@@ -64,30 +69,40 @@ class HomeController extends GetxController {
 
   Future<void> loadFeed(
       {String category = '', String? customQuery, bool refresh = false}) async {
+    if (category.isNotEmpty || customQuery != null) {
+      _feedCategory = category;
+      _feedCustomQuery = customQuery;
+    }
     if (refresh) {
+      _feedGeneration++;
       _feedCursor = null;
       hasMoreFeed.value = true;
     }
-    if (isLoadingFeed.value) return;
+    if (isLoadingFeed.value && !refresh) return;
+    final generation = _feedGeneration;
+    final cursor = _feedCursor;
 
     isLoadingFeed.value = true;
     feedError.value = '';
     try {
-      final tweets = await _xquik.searchTweets(
-        category: category,
-        customQuery: customQuery,
-        cursor: refresh ? null : _feedCursor,
+      final page = await _xquik.searchTweetPage(
+        category: _feedCategory,
+        customQuery: _feedCustomQuery,
+        cursor: cursor,
       );
-      if (refresh || _feedCursor == null) {
-        feedTweets.assignAll(tweets);
+      if (generation != _feedGeneration) return;
+      if (cursor == null) {
+        feedTweets.assignAll(page.tweets);
       } else {
-        feedTweets.addAll(tweets);
+        final seen = feedTweets.map((tweet) => tweet.id).toSet();
+        feedTweets.addAll(page.tweets.where((tweet) => seen.add(tweet.id)));
       }
-      hasMoreFeed.value = tweets.isNotEmpty;
+      _feedCursor = page.nextCursor;
+      hasMoreFeed.value = page.hasMore;
     } catch (e) {
-      feedError.value = e.toString();
+      if (generation == _feedGeneration) feedError.value = e.toString();
     } finally {
-      isLoadingFeed.value = false;
+      if (generation == _feedGeneration) isLoadingFeed.value = false;
     }
   }
 
@@ -178,7 +193,9 @@ class HomeController extends GetxController {
   }
 
   void onCategorySelected(int index, String tag) {
-    loadFeed(category: tag, refresh: true);
+    _feedCategory = tag;
+    _feedCustomQuery = null;
+    loadFeed(refresh: true);
   }
 
   Future<void> refreshAll() async {

@@ -83,7 +83,8 @@ class _AllTrendsScreenState extends State<AllTrendsScreen> {
         centerTitle: true,
         leading: IconButton(
           onPressed: Get.back,
-          icon: Icon(HugeIcons.strokeRoundedArrowLeft01, color: c.textPrimary, size: 22),
+          icon: Icon(HugeIcons.strokeRoundedArrowLeft01,
+              color: c.textPrimary, size: 22),
         ),
         title: Text(
           'trend_topics'.tr,
@@ -101,12 +102,14 @@ class _AllTrendsScreenState extends State<AllTrendsScreen> {
                   child: SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: AppColors.primary),
                   ),
                 )
               : IconButton(
                   onPressed: _load,
-                  icon: const Icon(HugeIcons.strokeRoundedRefresh, color: AppColors.primary, size: 20),
+                  icon: const Icon(HugeIcons.strokeRoundedRefresh,
+                      color: AppColors.primary, size: 20),
                 )),
         ],
         bottom: PreferredSize(
@@ -124,7 +127,8 @@ class _AllTrendsScreenState extends State<AllTrendsScreen> {
           child: ListView.separated(
             padding: const EdgeInsets.only(bottom: 20),
             itemCount: _trends.length,
-            separatorBuilder: (_, __) => Divider(color: c.divider, height: 1, indent: 16),
+            separatorBuilder: (_, __) =>
+                Divider(color: c.divider, height: 1, indent: 16),
             itemBuilder: (_, i) => _TrendTile(topic: _trends[i], c: c),
           ),
         );

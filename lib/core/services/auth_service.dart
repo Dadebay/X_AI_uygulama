@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:atlas/core/services/notification_storage_service.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._();
@@ -60,6 +61,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    NotificationStorageService().clearAll();
     await Future.wait([
       _auth.signOut(),
       _googleSignIn.signOut(),
@@ -94,10 +96,8 @@ class AuthService {
     return doc.exists;
   }
 
-  Stream<List<Map<String, dynamic>>> savedTweetsStream() {
-    final id = _auth.currentUser?.uid;
-    if (id == null) return const Stream.empty();
-    return _savedRef(id)
+  Stream<List<Map<String, dynamic>>> savedTweetsStream(String uid) {
+    return _savedRef(uid)
         .orderBy('savedAt', descending: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => d.data()).toList());

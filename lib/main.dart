@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:atlas/core/lang/app_translations.dart';
 import 'package:atlas/core/api/api_service.dart';
 import 'package:atlas/firebase_options.dart';
@@ -20,10 +22,24 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  } catch (_) {}
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+  } catch (_) {
+    runApp(const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: TextButton(
+            onPressed: main,
+            child: Text('Unable to start Pulse. Tap to retry.'),
+          ),
+        ),
+      ),
+    ));
+    return;
+  }
 
   await GetStorage.init();
+  await GetStorage().remove('fcm_notifications');
   Get.put(GetStorage());
   Get.put(LanguageController());
   final themeCtrl = Get.put(ThemeController());
@@ -31,28 +47,30 @@ void main() async {
   Get.put(AuthController());
   Get.put(SavedController());
 
-  final localNotificationsService = LocalNotificationsService.instance();
-  await localNotificationsService.init();
-
-  final firebaseMessagingService = FirebaseMessagingService.instance();
-  await firebaseMessagingService.init(localNotificationsService: localNotificationsService);
-
-  // Set up global token refresh listener for server registration
-  _setupFcmTokenListener();
-
   runApp(const AtlasApp());
+  unawaited(_initializeNotifications());
+}
+
+Future<void> _initializeNotifications() async {
+  try {
+    final local = LocalNotificationsService.instance();
+    await local.init();
+    await FirebaseMessagingService.instance()
+        .init(localNotificationsService: local);
+    _setupFcmTokenListener();
+  } catch (error) {
+    debugPrint('[Startup] Notifications unavailable: ${error.runtimeType}');
+  }
 }
 
 void _setupFcmTokenListener() {
   FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
-    print('[FCM] Token refresh detected: $newToken');
     try {
       final storage = Get.find<GetStorage>();
       await ApiService().registerFcmToken(newToken);
       storage.write('fcm_token', newToken);
-      print('[FCM] Token registered successfully via global listener');
-    } catch (e) {
-      print('[FCM] Failed to register token via global listener: $e');
+    } catch (error) {
+      debugPrint('[FCM] Token registration failed: ${error.runtimeType}');
     }
   });
 }
@@ -78,7 +96,8 @@ class AtlasApp extends StatelessWidget {
           home: const SplashScreen(),
           defaultTransition: Transition.cupertino,
           builder: (context, child) {
-            return GlobalSafeAreaWrapper(child: child ?? const SizedBox.shrink());
+            return GlobalSafeAreaWrapper(
+                child: child ?? const SizedBox.shrink());
           },
         ));
   }

@@ -44,7 +44,8 @@ class AppNetworkImage extends StatelessWidget {
         height: height,
         color: backgroundColor ?? const Color(0xFFF9F9F9),
         padding: const EdgeInsets.all(8),
-        child: Image.asset(resolvedUrl, fit: fit, errorBuilder: (_, __, ___) => _errorPlaceholder()),
+        child: Image.asset(resolvedUrl,
+            fit: fit, errorBuilder: (_, __, ___) => _errorPlaceholder()),
       );
     }
     return CachedNetworkImage(
@@ -90,10 +91,12 @@ class AppNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       color: backgroundColor ?? const Color(0xFFF0F0F0),
-      child: Center(
-        child: HugeIcon(icon: HugeIcons.strokeRoundedImageNotFound01, color: Colors.grey, size: 32),
+      child: const Center(
+        child: HugeIcon(
+            icon: HugeIcons.strokeRoundedImageNotFound01,
+            color: Colors.grey,
+            size: 32),
       ),
     );
   }
 }
-
