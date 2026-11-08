@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:atlas/core/services/auth_service.dart';
 import 'package:atlas/models/tweet_model.dart';
@@ -9,16 +12,28 @@ class SavedController extends GetxController {
   final savedTweets = <TweetModel>[].obs;
   final savedIds = RxSet<String>({});
   final isLoading = true.obs;
+  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<List<Map<String, dynamic>>>? _savedSubscription;
+  String? _activeUid;
 
   @override
   void onInit() {
     super.onInit();
-    _listenSaved();
+    _authSubscription = _service.authStateChanges.listen((user) {
+      _savedSubscription?.cancel();
+      _savedSubscription = null;
+      _activeUid = user?.uid;
+      savedTweets.clear();
+      savedIds.clear();
+      isLoading.value = user != null;
+      if (user != null) _listenSaved(user.uid);
+    });
   }
 
-  void _listenSaved() {
-    _service.savedTweetsStream().listen(
+  void _listenSaved(String uid) {
+    _savedSubscription = _service.savedTweetsStream(uid).listen(
       (list) {
+        if (_activeUid != uid) return;
         isLoading.value = false;
         savedTweets.value = list.map(_fromMap).toList();
         savedIds.assignAll(list.map((m) => m['id']?.toString() ?? '').toSet());
@@ -27,9 +42,17 @@ class SavedController extends GetxController {
     );
   }
 
+  @override
+  void onClose() {
+    _savedSubscription?.cancel();
+    _authSubscription?.cancel();
+    super.onClose();
+  }
+
   bool isSaved(String tweetId) => savedIds.contains(tweetId);
 
   Future<void> toggleSave(TweetModel tweet) async {
+    if (!_service.isLoggedIn) return;
     if (isSaved(tweet.id)) {
       savedIds.remove(tweet.id);
       await _service.unsaveTweet(tweet.id);

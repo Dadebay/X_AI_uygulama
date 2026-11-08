@@ -1,10 +1,14 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart' as getx;
 import 'package:get_storage/get_storage.dart';
 import 'package:atlas/modules/profile/controllers/language_controller.dart';
 
 class ApiClient {
-  static const String baseUrl = 'http://216.250.11.77:7000/api/';
+  static const String baseUrl = String.fromEnvironment(
+    'APP_API_BASE_URL',
+    defaultValue: 'http://216.250.11.77:7000/api/',
+  );
 
   static Dio? _instance;
 
@@ -36,6 +40,13 @@ class _AppInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (kReleaseMode && options.uri.scheme != 'https') {
+      handler.reject(DioException(
+        requestOptions: options,
+        message: 'APP_API_BASE_URL must use HTTPS in release builds.',
+      ));
+      return;
+    }
     final token = _storage.read<String>('auth_token');
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
