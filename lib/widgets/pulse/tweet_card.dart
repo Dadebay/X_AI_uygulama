@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:atlas/themes/colors.dart';
 import 'package:atlas/themes/tc.dart';
@@ -137,12 +136,14 @@ class TweetCard extends StatelessWidget {
                           ),
                           if (isVerified) ...[
                             const SizedBox(width: 3),
-                            const Icon(HugeIcons.strokeRoundedTick02, color: AppColors.blue, size: 13),
+                            const Icon(HugeIcons.strokeRoundedTick02,
+                                color: AppColors.blue, size: 13),
                           ],
                           if (showAiBadge) ...[
                             const SizedBox(width: 6),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: AppColors.lightPrimary,
                                 borderRadius: BorderRadius.circular(4),
@@ -173,7 +174,11 @@ class TweetCard extends StatelessWidget {
                             ),
                           ),
                           if (timeAgo.isNotEmpty) ...[
-                            Text(' · ', style: TextStyle(color: c.textMuted, fontSize: 12, fontFamily: 'Gilroy')),
+                            Text(' · ',
+                                style: TextStyle(
+                                    color: c.textMuted,
+                                    fontSize: 12,
+                                    fontFamily: 'Gilroy')),
                             Flexible(
                               child: Text(
                                 timeAgo,
@@ -195,7 +200,8 @@ class TweetCard extends StatelessWidget {
                 if (onClose != null)
                   GestureDetector(
                     onTap: onClose,
-                    child: Icon(HugeIcons.strokeRoundedCancel01, color: c.textMuted, size: 18),
+                    child: Icon(HugeIcons.strokeRoundedCancel01,
+                        color: c.textMuted, size: 18),
                   ),
               ],
             ),
@@ -204,7 +210,11 @@ class TweetCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               _cleanContent(content),
-              style: TextStyle(color: c.textPrimary, fontSize: 14, fontFamily: 'Gilroy', height: 1.45),
+              style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 14,
+                  fontFamily: 'Gilroy',
+                  height: 1.45),
             ),
 
             // ── Medya ────────────────────────────────────────────
@@ -235,7 +245,7 @@ class TweetCard extends StatelessWidget {
                 const SizedBox(width: 14),
                 // Beğeni sayısı (read-only)
                 _StatChip(
-                  icon: IconlyLight.heart,
+                  icon: Icons.favorite_border,
                   count: likes,
                   color: c.textMuted,
                 ),
@@ -248,7 +258,8 @@ class TweetCard extends StatelessWidget {
                   onTap: _share,
                   child: Padding(
                     padding: const EdgeInsets.all(4),
-                    child: Icon(HugeIcons.strokeRoundedShare01, color: c.textMuted, size: 18),
+                    child: Icon(HugeIcons.strokeRoundedShare01,
+                        color: c.textMuted, size: 18),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -257,7 +268,8 @@ class TweetCard extends StatelessWidget {
                   GestureDetector(
                     onTap: _openOnX,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
                         border: Border.all(color: c.divider),
                         borderRadius: BorderRadius.circular(20),
@@ -279,7 +291,10 @@ class TweetCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             "X'te Aç",
-                            style: TextStyle(color: c.textSecondary, fontSize: 11, fontFamily: 'Gilroy'),
+                            style: TextStyle(
+                                color: c.textSecondary,
+                                fontSize: 11,
+                                fontFamily: 'Gilroy'),
                           ),
                         ],
                       ),
@@ -307,11 +322,13 @@ class _BookmarkButton extends StatelessWidget {
       final saved = Get.find<SavedController>();
       return Obx(() {
         final loggedIn = auth.user.value != null;
-        final isSaved = loggedIn && tweetId.isNotEmpty && saved.savedIds.contains(tweetId);
+        final isSaved =
+            loggedIn && tweetId.isNotEmpty && saved.savedIds.contains(tweetId);
         return GestureDetector(
           onTap: () {
             if (!loggedIn) {
-              Get.to(() => const LoginScreen(), transition: Transition.cupertino);
+              Get.to(() => const LoginScreen(),
+                  transition: Transition.cupertino);
               return;
             }
             if (tweetId.isEmpty) return;
@@ -333,7 +350,7 @@ class _BookmarkButton extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(4),
             child: Icon(
-              isSaved ? IconlyBold.bookmark : IconlyLight.bookmark,
+              isSaved ? Icons.bookmark : Icons.bookmark_border,
               color: isSaved ? AppColors.primary : c.textMuted,
               size: 19,
             ),
@@ -359,7 +376,8 @@ class _Avatar extends StatelessWidget {
       backgroundColor: c.surfaceElevated,
       child: Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: TextStyle(color: c.textPrimary, fontWeight: FontWeight.w700, fontSize: 15),
+        style: TextStyle(
+            color: c.textPrimary, fontWeight: FontWeight.w700, fontSize: 15),
       ),
     );
     if (url.isEmpty) return fallback;
@@ -434,8 +452,7 @@ class _MediaPreview extends StatelessWidget {
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
                 children: items
-                    .map((m) =>
-                        _MediaTile(item: m, onVideoTap: onVideoTap))
+                    .map((m) => _MediaTile(item: m, onVideoTap: onVideoTap))
                     .toList(),
               ),
       ),

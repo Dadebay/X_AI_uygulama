@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:iconly/iconly.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:atlas/themes/colors.dart';
@@ -268,7 +267,7 @@ class _BookmarkBtn extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(10),
             child: Icon(
-              isSaved ? IconlyBold.bookmark : IconlyLight.bookmark,
+              isSaved ? Icons.bookmark : Icons.bookmark_border,
               color: isSaved ? AppColors.primary : c.textMuted,
               size: 22,
             ),
